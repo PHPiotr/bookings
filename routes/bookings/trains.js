@@ -168,7 +168,7 @@ router.get('/new', loggedIn, function (req, res) {
     });
 });
 
-router.post('/', function (req, res, next) {
+router.post('/', loggedIn, function (req, res, next) {
 
     var train = req.body;
     train.created_by = req.user._id;
