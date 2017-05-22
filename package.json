@@ -7,7 +7,18 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "NODE_ENV=development node bin/www",
-    "start-prod": "NODE_ENV=production node bin/www"
+    "start-prod": "NODE_ENV=production node bin/www",
+    "dev-server": "better-npm-run dev-server"
+  },
+  "betterScripts": {
+    "dev-server": {
+      "command": "node bin/www",
+      "env": {
+        "NODE_PATH": ".",
+        "NODE_ENV": "development",
+        "PORT": 8080
+      }
+    }
   },
   "author": "PHPiotr",
   "dependencies": {
@@ -24,5 +35,7 @@
     "request": "^2.79.0",
     "socket.io": "^1.7.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "better-npm-run": "0.0.15"
+  }
 }

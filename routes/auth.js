@@ -1,6 +1,5 @@
 var async = require('async');
 var User = require('../data/models/user');
-var config = require('../config');
 var loggedIn = require('./middleware/logged_in');
 var express = require('express');
 var router = express.Router();
@@ -50,10 +49,10 @@ router.post('/login', function (req, res) {
             }
             var token = jwt.sign({
                 sub: user._id
-            }, config.secret, {
+            }, process.env.AUTH_SECRET, {
                 expiresIn: 2880
             });
-            res.io.emit(config.event.token_received, token);
+            res.io.emit(process.env.EVENT_TOKEN_RECEIVED, token);
             res.json({
                 ok: true,
                 token: token

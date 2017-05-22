@@ -1,4 +1,3 @@
-var config = require('../../config');
 var jwt = require('jsonwebtoken');
 var User = require('../../data/models/user');
 
@@ -10,9 +9,9 @@ function loggedIn(req, res, next) {
 
         token = token.replace('Bearer ', '');
 
-        return jwt.verify(token, config.secret, function (err, decoded) {
+        return jwt.verify(token, process.env.AUTH_SECRET, function (err, decoded) {
             if (err) {
-                res.io.emit(config.event.auth_failed);
+                res.io.emit(process.env.EVENT_AUTH_FAILED);
                 return res.status(403).json({
                     success: false,
                     message: 'Failed to authenticate token.',
@@ -21,17 +20,17 @@ function loggedIn(req, res, next) {
             }
             User.findOne({_id: decoded.sub}, function (err, user) {
                 if (err) {
-                    res.io.emit(config.event.auth_failed);
+                    res.io.emit(process.env.EVENT_AUTH_FAILED);
                     return next(err);
                 }
                 if (!user) {
-                    res.io.emit(config.event.auth_failed);
+                    res.io.emit(process.env.EVENT_AUTH_FAILED);
                     return res.status(404).json({
                         success: false,
                         message: 'User not found'
                     });
                 }
-                res.io.emit(config.event.auth_success);
+                res.io.emit(process.env.EVENT_AUTH_SUCCESS);
                 req.decoded = decoded;
                 req.user = user;
                 return next();
@@ -40,7 +39,7 @@ function loggedIn(req, res, next) {
 
     }
 
-    res.io.emit(config.event.auth_failed);
+    res.io.emit(process.env.EVENT_AUTH_FAILED);
     res.status(403).json({
         success: false,
         message: 'No token provided.'

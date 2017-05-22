@@ -13,17 +13,17 @@ var report = require('./routes/report');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-var api_prefix = config.api_prefix;
+var api_prefix = process.env.API_PREFIX;
 
 app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", config.cors.access_control_allow_origin);
-    res.header("Access-Control-Allow-Headers", config.cors.access_control_allow_headers);
+    res.header("Access-Control-Allow-Origin", process.env.CORS_ACCESS_CONTROL_ALLOW_ORIGIN);
+    res.header("Access-Control-Allow-Headers", process.env.CORS_ACCESS_CONTROL_ALLOW_HEADERS);
     res.io = io;
     next();
 });
 
 app.set('view engine', 'pug');
-app.set('superSecret', config.secret);
+app.set('superSecret', process.env.AUTH_SECRET);
 
 app.use(require('method-override')('_method'));
 app.use(bodyParser.json());
@@ -51,6 +51,6 @@ app.use(function (err, req, res) {
     res.json({'error': err});
 });
 
-mongoose.connect(config.database);
+mongoose.connect(process.env.DATABASE);
 
 module.exports = {app: app, server: server};
