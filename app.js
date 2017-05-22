@@ -1,7 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
-var config = require('./config.js');
 var index = require('./routes/index');
 var auth = require('./routes/auth');
 var buses = require('./routes/bookings/buses');
@@ -51,6 +50,6 @@ app.use(function (err, req, res) {
     res.json({'error': err});
 });
 
-mongoose.connect(process.env.DATABASE);
+mongoose.connect(process.env.MONGODB_URI);
 
 module.exports = {app: app, server: server};
