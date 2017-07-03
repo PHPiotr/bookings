@@ -42,6 +42,10 @@ var TrainSchema = new Schema({
         get: function (number) {
             return (number / 100).toFixed(2);
         },
+        set: function(number) {
+            var str = number.toString();
+            return parseInt(str.replace(/\D/g, ""));
+        },
         required: true
     },
     currency: {
