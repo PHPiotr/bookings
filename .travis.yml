@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+- stable
+sudo: false
+deploy:
+  provider: heroku
+  app: boo-kings
+  on: master
+  run:
+  - "nf start"
+  api_key:
+    secure: q55JokvMK/NNcc13H0k1vMkW9QLpmuqvqJaq7yRXCBMedPudXNaQiYa/NeoXOQaf/a9B2N17rKsUXsfUA7UE5J7KuebyZx+OcOzwgORuCtGXPrStzdVfxSnCNEG+fcIY0jw0BissEU/H60Lk64eplnCTzaw3W410il2wPddsw0lwK+MXxbMxwWXLxEK2iOpivr0NXUeFD3Nf3CN0aJzOz//OQuhLW4fdRha9mMQYJgMcm6IhVg3UHJ1mSsaQWhg+GXAM66yCgdaTBHourhRQP3sNr6+OAcDUKLDABgrsNx97HM1Zw4wkHGTi90gzT9uWAoRwJD7ba/rloeStvJB+h4+8ZAV2lDF6l8hKWzlhPh7L/nyUxCgUrZn3Q6U1UFmlqdoZONz4ePSRCsgcdKsRXCdAf/6Et+GL3R9kXL9qKxgkVB/sKF+3Bz37RlbCJQGGy+y08lv2N4C39JTPkQ8tluRmWPa+5vDAU3fTMeouV7iZ+3SnApTcgsbuVy5v5+Zk8ZikBQ3Xyl3aRXmYRGv6qVwthqQmHzAqt/osdV+5ACvAALQvd2NQiKNG1clcaxNJBBDs0N9PJaKRj5qQ6UwbfzfcFFDGMOpmg+m9b2xijOafqiHY6QIT/NDedhk3tr7P0/jFK6vwW4Q3gzKvly6nZnzHuRWMATrHlSkg4QRzpWI=
