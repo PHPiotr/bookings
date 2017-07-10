@@ -1,6 +1,7 @@
 var async = require('async');
 var Bus = require('../../data/models/bus');
 var loggedIn = require('../middleware/logged_in');
+var loadBus = require('../middleware/load_bus');
 var max_per_page = 10;
 
 var express = require('express');
@@ -197,6 +198,21 @@ router.get('/new', loggedIn, function (req, res) {
         currencies: Bus.schema.path('currency').enumValues,
         selected: 'buses',
         active: 'new'
+    });
+});
+
+router.get('/:id', loggedIn, loadBus, function (req, res) {
+    res.send(JSON.stringify(req.bus));
+});
+
+router.put('/:id', loggedIn, loadBus, function(req, res) {
+    const bus = req.body;
+    Bus.update(bus, function (err) {
+        if (err) {
+            throw new Error(err);
+        }
+        res.io.emit('update_bus', bus);
+        res.status(204).send();
     });
 });
 

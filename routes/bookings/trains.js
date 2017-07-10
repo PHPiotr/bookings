@@ -1,6 +1,7 @@
 var async = require('async');
 var Train = require('../../data/models/train');
 var loggedIn = require('../middleware/logged_in');
+var loadTrain = require('../middleware/load_train');
 var max_per_page = 10;
 
 var express = require('express');
@@ -165,6 +166,21 @@ router.get('/new', loggedIn, function (req, res) {
         currencies: Train.schema.path('currency').enumValues,
         selected: 'trains',
         active: 'new'
+    });
+});
+
+router.get('/:id', loggedIn, loadTrain, function (req, res) {
+    res.send(JSON.stringify(req.train));
+});
+
+router.put('/:id', loggedIn, loadTrain, function(req, res) {
+    const train = req.body;
+    Train.update(train, function (err) {
+        if (err) {
+            throw new Error(err);
+        }
+        res.io.emit('update_train', train);
+        res.status(204).send();
     });
 });
 

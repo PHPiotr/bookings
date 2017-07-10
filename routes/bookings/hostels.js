@@ -1,6 +1,7 @@
 var async = require('async');
 var Hostel = require('../../data/models/hostel');
 var loggedIn = require('../middleware/logged_in');
+var loadHostel = require('../middleware/load_hostel');
 var max_per_page = 10;
 
 var express = require('express');
@@ -146,6 +147,21 @@ router.get('/new', loggedIn, function (req, res) {
         currencies: Hostel.schema.path('currency').enumValues,
         selected: 'hostels',
         active: 'new'
+    });
+});
+
+router.get('/:id', loggedIn, loadHostel, function (req, res) {
+    res.send(JSON.stringify(req.hostel));
+});
+
+router.put('/:id', loggedIn, loadHostel, function(req, res) {
+    const hostel = req.body;
+    Hostel.update(hostel, function (err) {
+        if (err) {
+            throw new Error(err);
+        }
+        res.io.emit('update_hostel', hostel);
+        res.status(204).send();
     });
 });
 

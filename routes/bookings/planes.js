@@ -1,6 +1,7 @@
 var async = require('async');
-var Flight = require('../../data/models/flight');
+var Plane = require('../../data/models/flight');
 var loggedIn = require('../middleware/logged_in');
+var loadPlane = require('../middleware/load_plane');
 var max_per_page = 10;
 
 var express = require('express');
@@ -46,7 +47,7 @@ router.get('/', loggedIn, function (req, res, next) {
     async.parallel(
         [
             function (next) {
-                Flight.aggregate(
+                Plane.aggregate(
                     [
                         {$match: match},
                         {"$sort": sort},
@@ -130,7 +131,7 @@ router.get('/', loggedIn, function (req, res, next) {
                 );
             },
             function (next) {
-                Flight.aggregate(
+                Plane.aggregate(
                     [
                         {$match: match},
                         {
@@ -199,9 +200,24 @@ router.get('/', loggedIn, function (req, res, next) {
 router.get('/new', loggedIn, function (req, res) {
     res.render('planes/new', {
         title: "New flight",
-        currencies: Flight.schema.path('currency').enumValues,
+        currencies: Plane.schema.path('currency').enumValues,
         selected: 'planes',
         active: 'new'
+    });
+});
+
+router.get('/:id', loggedIn, loadPlane, function (req, res) {
+    res.send(JSON.stringify(req.plane));
+});
+
+router.put('/:id', loggedIn, loadPlane, function(req, res) {
+    const plane = req.body;
+    Plane.update(plane, function (err) {
+        if (err) {
+            throw new Error(err);
+        }
+        res.io.emit('update_plane', plane);
+        res.status(204).send();
     });
 });
 
@@ -209,7 +225,7 @@ router.post('/', loggedIn, function (req, res, next) {
 
     var plane = req.body;
     plane.created_by = req.user._id;
-    Flight.create(plane, function (err) {
+    Plane.create(plane, function (err) {
         if (err) {
             if (err.code === 11000) {
                 res.status(409).send(JSON.stringify({ok: false, err: err}));
