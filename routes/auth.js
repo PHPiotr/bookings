@@ -5,58 +5,42 @@ var express = require('express');
 var router = express.Router();
 var jwt = require('jsonwebtoken');
 
-router.post('/login', function (req, res) {
+function fail(res) {
+    res.set('WWW-Authenticate', 'Basic realm="Access to bookings"');
+    res.status(401).json(['Login please']);
+}
 
-    var username = req.body.username || '';
-    var password = req.body.password || '';
-    var errors = {};
-    if (!username) {
-        errors['username'] = {message: 'Username is required'};
-    }
-    if (!password) {
-        errors['password'] = {message: 'Password is required'};
+router.get('/login', (req, res, next) => {
+
+    var b64auth = (req.headers.authorization || '').split(' ')[1] || '';
+    var [username, password] = new Buffer(b64auth, 'base64').toString().split(':');
+
+    if (!username || !password) {
+        return fail(res);
     }
 
     User.findOne({
         username: username
     }, function (err, user) {
         if (err) {
-            throw err;
+            return next(err);
         }
         if (!user) {
-            if (username) {
-                errors['username'] = {message: 'Wrong username'};
-            }
-            return res.json({
-                ok: false,
-                message: 'Validation failed',
-                errors: errors,
-            })
+            return fail(res);
         }
-        user.comparePassword(req.body.password, function (err, isMatch) {
+        user.comparePassword(password, (err, isMatch) => {
             if (err) {
                 return next(err);
             }
             if (!isMatch) {
-                if (password) {
-                    errors['password'] = {message: 'Wrong password'};
-                }
-                return res.json({
-                    ok: false,
-                    message: 'Validation failed',
-                    errors: errors
-                });
+                return fail(res);
             }
-            var token = jwt.sign({
-                sub: user._id
-            }, process.env.AUTH_SECRET, {
-                expiresIn: 2880
-            });
-            res.io.emit(process.env.EVENT_TOKEN_RECEIVED, token);
-            res.json({
-                ok: true,
-                token: token
-            });
+            var expiresIn = process.env.EXPIRES_IN;
+            var token = jwt.sign({sub: user._id}, process.env.AUTH_SECRET, {expiresIn: expiresIn});
+            var body = {token: token, expiresIn: expiresIn};
+
+            res.io.emit(process.env.ON_TOKEN_RECEIVED, body);
+            res.json(body);
         });
     });
 });
