@@ -173,10 +173,14 @@ router.get('/', loggedIn, function (req, res, next) {
                 return next(err);
             }
             var flights = results[0];
-            var cost = results[1].cost;
-            var average_cost = results[1].avg_cost;
-            var flights_length = results[1].flights_length;
-            var return_flights_length = results[1].return_flights_length;
+            var cost = 0, average_cost = 0, flights_length = 0, return_flights_length = 0;
+            if (results[1]) {
+                var aggregated = results[1];
+                cost = aggregated.cost;
+                average_cost = aggregated.avg_cost;
+                flights_length = aggregated.flights_length;
+                return_flights_length = aggregated.return_flights_length;
+            }
 
             res.send(JSON.stringify({
                 title: type + ' flights',
@@ -195,15 +199,6 @@ router.get('/', loggedIn, function (req, res, next) {
             }));
         }
     );
-});
-
-router.get('/new', loggedIn, function (req, res) {
-    res.render('planes/new', {
-        title: "New flight",
-        currencies: Plane.schema.path('currency').enumValues,
-        selected: 'planes',
-        active: 'new'
-    });
 });
 
 router.get('/:id', loggedIn, loadPlane, function (req, res) {

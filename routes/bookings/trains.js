@@ -135,11 +135,14 @@ router.get('/', loggedIn, function (req, res, next) {
                 return next(err);
             }
             var journeys = results[0];
-            var journeysExist = undefined !== results[1];
-            var cost = journeysExist ? results[1].cost : 0;
-            var average_cost = journeysExist ? results[1].avg_cost : 0;
-            var journeys_length = journeysExist ? results[1].journeys_length : 0;
-            var return_journeys_length = journeysExist ? results[1].return_journeys_length : 0;
+            var cost = 0, average_cost = 0, journeys_length = 0, return_journeys_length = 0;
+            if (results[1]) {
+                var aggregated = results[1];
+                cost = aggregated.cost;
+                average_cost = aggregated.avg_cost;
+                journeys_length = aggregated.journeys_length;
+                return_journeys_length = aggregated.return_journeys_length;
+            }
 
             res.send(JSON.stringify({
                 title: type + ' trains',
@@ -160,20 +163,11 @@ router.get('/', loggedIn, function (req, res, next) {
     );
 });
 
-router.get('/new', loggedIn, function (req, res) {
-    res.render('trains/new', {
-        title: "New train",
-        currencies: Train.schema.path('currency').enumValues,
-        selected: 'trains',
-        active: 'new'
-    });
-});
-
 router.get('/:id', loggedIn, loadTrain, function (req, res) {
     res.send(JSON.stringify(req.train));
 });
 
-router.put('/:id', loggedIn, loadTrain, function(req, res) {
+router.put('/:id', loggedIn, loadTrain, function (req, res) {
     const train = req.body;
     Train.update(train, function (err) {
         if (err) {
@@ -185,7 +179,6 @@ router.put('/:id', loggedIn, loadTrain, function(req, res) {
 });
 
 router.post('/', loggedIn, function (req, res, next) {
-
     var train = req.body;
     train.created_by = req.user._id;
     Train.create(train, function (err) {

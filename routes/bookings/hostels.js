@@ -141,14 +141,6 @@ router.get('/', loggedIn, function (req, res, next) {
         }
     );
 });
-router.get('/new', loggedIn, function (req, res) {
-    res.render('hostels/new', {
-        title: "New hostel",
-        currencies: Hostel.schema.path('currency').enumValues,
-        selected: 'hostels',
-        active: 'new'
-    });
-});
 
 router.get('/:id', loggedIn, loadHostel, function (req, res) {
     res.send(JSON.stringify(req.hostel));

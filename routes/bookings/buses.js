@@ -192,14 +192,6 @@ router.get('/', loggedIn, function (req, res, next) {
         }
     );
 });
-router.get('/new', loggedIn, function (req, res) {
-    res.render('buses/new', {
-        title: "New bus",
-        currencies: Bus.schema.path('currency').enumValues,
-        selected: 'buses',
-        active: 'new'
-    });
-});
 
 router.get('/:id', loggedIn, loadBus, function (req, res) {
     res.send(JSON.stringify(req.bus));
