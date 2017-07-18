@@ -1,6 +1,6 @@
 var User = require('../../data/models/user');
 function loadUser(req, res, next) {
-    User.findOne({username: req.params.name}, function (err, user) {
+    User.findOne({_id: new ObjectId(req.params.id)}, function (err, user) {
         if (err) {
             return next(err);
         }

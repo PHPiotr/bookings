@@ -5,9 +5,9 @@ var express = require('express');
 var router = express.Router();
 var jwt = require('jsonwebtoken');
 
-function fail(res) {
+function fail(res, msg, code) {
     res.set('WWW-Authenticate', 'Basic realm="Access to bookings"');
-    res.status(401).json(['Login please']);
+    res.status(code).json({msg: msg});
 }
 
 router.get('/login', (req, res, next) => {
@@ -16,7 +16,7 @@ router.get('/login', (req, res, next) => {
     var [username, password] = new Buffer(b64auth, 'base64').toString().split(':');
 
     if (!username || !password) {
-        return fail(res);
+        return fail(res, 'Username/password combination does not match', 401);
     }
 
     User.findOne({
@@ -26,14 +26,17 @@ router.get('/login', (req, res, next) => {
             return next(err);
         }
         if (!user) {
-            return fail(res);
+            return fail(res, 'Username/password combination does not match', 403);
         }
         user.comparePassword(password, (err, isMatch) => {
             if (err) {
                 return next(err);
             }
             if (!isMatch) {
-                return fail(res);
+                return fail(res, 'Username/password combination does not match', 403);
+            }
+            if (!user.active) {
+                return fail(res, 'Inactive user', 403);
             }
             var expiresIn = process.env.EXPIRES_IN;
             var token = jwt.sign({sub: user._id}, process.env.AUTH_SECRET, {expiresIn: expiresIn});
