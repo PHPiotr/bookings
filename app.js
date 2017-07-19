@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var index = require('./routes/index');
 var auth = require('./routes/auth');
+var users = require('./routes/users');
 var buses = require('./routes/bookings/buses');
 var planes = require('./routes/bookings/planes');
 var trains = require('./routes/bookings/trains');
@@ -21,15 +22,12 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.set('view engine', 'pug');
-app.set('superSecret', process.env.AUTH_SECRET);
-
-app.use(require('method-override')('_method'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
 app.use(api_prefix + '/', index);
 app.use(api_prefix + '/auth', auth);
+app.use(api_prefix + '/users', users);
 app.use(api_prefix + '/bookings/planes', planes);
 app.use(api_prefix + '/bookings/hostels', hostels);
 app.use(api_prefix + '/bookings/buses', buses);
@@ -50,6 +48,8 @@ app.use(function (err, req, res) {
     res.json({'error': err});
 });
 
-mongoose.connect(process.env.MONGODB_URI);
+mongoose.connect(process.env.MONGODB_URI, {
+    useMongoClient: true
+});
 
 module.exports = {app: app, server: server};
