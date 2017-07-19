@@ -1,4 +1,5 @@
 var User = require('../../data/models/user');
+var ObjectId = require('mongoose').Types.ObjectId;
 function loadUser(req, res, next) {
     User.findOne({_id: new ObjectId(req.params.id)}, function (err, user) {
         if (err) {

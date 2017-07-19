@@ -36,7 +36,7 @@ router.get('/login', (req, res, next) => {
                 return fail(res, 'Username/password combination does not match', 403);
             }
             if (!user.active) {
-                return fail(res, 'Inactive user', 403);
+                //return fail(res, 'Inactive user', 403);
             }
             var expiresIn = process.env.EXPIRES_IN;
             var token = jwt.sign({sub: user._id}, process.env.AUTH_SECRET, {expiresIn: expiresIn});
