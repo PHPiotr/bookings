@@ -25,6 +25,10 @@ router.post('/', (req, res, next) => {
                 });
             });
         }
+
+        if (err.name === 'ValidationError') {
+            return res.status(400).json({err: {message: err.message}});
+        }
         return next(err);
     });
 });
