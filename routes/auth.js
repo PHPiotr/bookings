@@ -39,7 +39,7 @@ router.get('/login', (req, res, next) => {
                 return fail(res, 'Inactive user', 403);
             }
             var expiresIn = process.env.EXPIRES_IN;
-            var token = jwt.sign({sub: user._id}, process.env.AUTH_SECRET, {expiresIn: expiresIn});
+            var token = jwt.sign({sub: user._id, purpose: 'login'}, process.env.AUTH_SECRET, {expiresIn: expiresIn, algorithm: 'HS256'});
             var body = {token: token, expiresIn: expiresIn};
 
             res.io.emit(process.env.ON_TOKEN_RECEIVED, body);

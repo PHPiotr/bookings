@@ -1,7 +1,7 @@
 var jwt = require('jsonwebtoken');
 var User = require('../../data/models/user');
 
-function loggedIn(req, res, next) {
+function loggedInOrActivating(req, res, next) {
 
     var token, header = req.headers['Authorization'] || req.headers['authorization'];
     if (header) {
@@ -13,7 +13,7 @@ function loggedIn(req, res, next) {
     if (token) {
 
         return jwt.verify(token, process.env.AUTH_SECRET, {algorithms: 'HS256'}, function (err, decoded) {
-            if (err || decoded.purpose !== 'login') {
+            if (err) {
                 res.io.emit(process.env.EVENT_AUTH_FAILED);
                 return res.status(403).json({
                     success: false,
@@ -50,4 +50,4 @@ function loggedIn(req, res, next) {
 
 }
 
-module.exports = loggedIn;
+module.exports = loggedInOrActivating;
