@@ -1,58 +1,77 @@
-var async = require('async');
-var Train = require('../../data/models/train');
-var loggedIn = require('../middleware/logged_in');
-var loadTrain = require('../middleware/load_train');
-var max_per_page = 10;
+const async = require('async');
+const Train = require('../../data/models/train');
+const loggedIn = require('../middleware/logged_in');
+const loadTrain = require('../middleware/load_train');
+const express = require('express');
+const router = express.Router();
+const mongoose = require('mongoose');
 
-var express = require('express');
-var router = express.Router();
-var mongoose = require('mongoose');
+router.get('/', loggedIn, (req, res, next) => {
 
-router.get('/', loggedIn, function (req, res, next) {
 
-    var current_page = req.query.page && parseInt(req.query.page, 10) || 1;
-    var user_id = req.user._id;
-    var param_type = req.query.type || '';
-    var sort = {'departure_date': 1};
-    var type = 'Current';
-    var type_lower = param_type.toLowerCase() || type.toLowerCase();
-    var newDate = new Date();
+    const currentUser = req.user._id;
+    const currentPage = (req.query.page && parseInt(req.query.page, 10)) || 1;
+    const currentType = (req.query.type || '').toLowerCase();
+    const currentLimit = (req.query.limit && parseInt(req.query.limit, 10)) || 10;
+    const newDate = new Date();
     newDate.setHours(0, 0, 0, 0);
-    var match = {
-        $or: [
-            {"departure_date": {$gte: newDate}},
-            {"return_departure_date": {$gte: newDate}}
-        ],
-        "created_by": user_id,
-    };
-    if ('past' === type_lower) {
-        sort = {'departure_date': -1};
-        type = 'Past';
-        match = {
-            $and: [
-                {"departure_date": {$lt: newDate}},
-                {
-                    $or: [
-                        {"return_departure_date": {$lt: newDate}},
-                        {"return_departure_date": {$eq: null}},
-                        {"return_departure_date": {$eq: ""}}
-                    ]
-                }
-            ],
-            "created_by": user_id,
-        };
+
+    let type;
+    let sort;
+    let match;
+
+    switch (currentType) {
+        case 'current':
+            sort = {'departure_date': 1};
+            type = 'Current';
+            match = {
+                $or: [
+                    {"departure_date": {$gte: newDate}},
+                    {"return_departure_date": {$gte: newDate}}
+                ],
+                "created_by": currentUser,
+            };
+
+            break;
+
+        case 'past':
+            sort = {'departure_date': -1};
+            type = 'Past';
+            match = {
+                $and: [
+                    {"departure_date": {$lt: newDate}},
+                    {
+                        $or: [
+                            {"return_departure_date": {$lt: newDate}},
+                            {"return_departure_date": {$eq: null}},
+                            {"return_departure_date": {$eq: ""}}
+                        ]
+                    }
+                ],
+                "created_by": currentUser,
+            };
+
+            break;
+
+        default:
+            sort = {'departure_date': -1};
+            type = 'All';
+            match = {created_by: currentUser};
+
+            break;
     }
+
     req.active = 'trains';
 
     async.parallel(
         [
-            function (next) {
+            (next) => {
                 Train.aggregate(
                     [
                         {$match: match},
                         {"$sort": sort},
-                        {"$skip": ((current_page - 1) * max_per_page)},
-                        {"$limit": max_per_page},
+                        {"$skip": ((currentPage - 1) * currentLimit)},
+                        {"$limit": currentLimit},
                         {
                             $project: {
                                 "_id": 1,
@@ -81,7 +100,7 @@ router.get('/', loggedIn, function (req, res, next) {
                             }
                         }
                     ],
-                    function (err, results) {
+                    (err, results) => {
                         if (err) {
                             return next(err);
                         }
@@ -92,7 +111,7 @@ router.get('/', loggedIn, function (req, res, next) {
                     }
                 );
             },
-            function (next) {
+            (next) => {
                 Train.aggregate(
                     [
                         {$match: match},
@@ -118,7 +137,7 @@ router.get('/', loggedIn, function (req, res, next) {
                             }
                         }
                     ],
-                    function (err, results) {
+                    (err, results) => {
                         if (err) {
                             return next(err);
                         }
@@ -130,46 +149,44 @@ router.get('/', loggedIn, function (req, res, next) {
                 );
             }
         ],
-        function (err, results) {
+        (err, results) => {
             if (err) {
                 return next(err);
             }
-            var journeys = results[0];
-            var cost = 0, average_cost = 0, journeys_length = 0, return_journeys_length = 0;
-            if (results[1]) {
-                var aggregated = results[1];
-                cost = aggregated.cost;
-                average_cost = aggregated.avg_cost;
-                journeys_length = aggregated.journeys_length;
-                return_journeys_length = aggregated.return_journeys_length;
-            }
+
+            const journeys = results[0];
+            const journeysExist = undefined !== results[1];
+            const cost = journeysExist ? results[1].cost : 0;
+            const averageCost = journeysExist ? results[1].avg_cost : 0;
+            const journeysLength = journeysExist ? results[1].journeys_length : 0;
+            const returnJourneysLength = journeysExist ? results[1].return_journeys_length : 0;
 
             res.send(JSON.stringify({
                 title: type + ' trains',
                 journeys: journeys,
-                current_page: current_page,
-                is_first_page: current_page === 1,
-                is_last_page: current_page * max_per_page >= journeys_length,
-                pages_count: journeys_length <= max_per_page ? 1 : Math.ceil(journeys_length / max_per_page),
-                max_per_page: max_per_page,
-                total_cost: journeys_length ? (cost / 100).toFixed(2) : '0.00',
-                average_cost: journeys_length ? (average_cost / 100).toFixed(2) : '0.00',
-                journeys_length: journeys_length,
-                return_journeys_length: return_journeys_length,
-                active: type_lower,
+                current_page: currentPage,
+                is_first_page: currentPage === 1,
+                is_last_page: currentPage * currentLimit >= journeysLength,
+                pages_count: journeysLength <= currentLimit ? 1 : Math.ceil(journeysLength / currentLimit),
+                max_per_page: currentLimit,
+                total_cost: journeysLength ? (cost / 100).toFixed(2) : '0.00',
+                average_cost: journeysLength ? (averageCost / 100).toFixed(2) : '0.00',
+                journeys_length: journeysLength,
+                return_journeys_length: returnJourneysLength,
+                active: currentType,
                 selected: 'trains'
             }));
         }
     );
 });
 
-router.get('/:id', loggedIn, loadTrain, function (req, res) {
+router.get('/:id', loggedIn, loadTrain, (req, res) => {
     res.send(JSON.stringify(req.train));
 });
 
-router.put('/:id', loggedIn, loadTrain, function (req, res) {
+router.put('/:id', loggedIn, loadTrain, (req, res) => {
     const train = req.body;
-    Train.update(train, function (err) {
+    Train.update(train, (err) => {
         if (err) {
             throw new Error(err);
         }
@@ -178,7 +195,7 @@ router.put('/:id', loggedIn, loadTrain, function (req, res) {
     });
 });
 
-router.post('/', loggedIn, function (req, res, next) {
+router.post('/', loggedIn, (req, res, next) => {
     var train = req.body;
     train.created_by = req.user._id;
     Train.create(train, function (err) {
