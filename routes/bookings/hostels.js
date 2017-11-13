@@ -1,52 +1,70 @@
-var async = require('async');
-var Hostel = require('../../data/models/hostel');
-var loggedIn = require('../middleware/logged_in');
-var loadHostel = require('../middleware/load_hostel');
-var max_per_page = 10;
+const async = require('async');
+const Hostel = require('../../data/models/hostel');
+const loggedIn = require('../middleware/logged_in');
+const loadHostel = require('../middleware/load_hostel');
+const express = require('express');
+const router = express.Router();
+const mongoose = require('mongoose');
 
-var express = require('express');
-var router = express.Router();
-var mongoose = require('mongoose');
+router.get('/', loggedIn, (req, res, next) => {
 
-router.get('/', loggedIn, function (req, res, next) {
-
-    var current_page = req.query.page && parseInt(req.query.page, 10) || 1;
-    var user_id = req.user._id;
-    var param_type = req.query.type || '';
-    var sort = {'departure_date': 1};
-    var type = 'Current';
-    var type_lower = param_type.toLowerCase() || type.toLowerCase();
-    var newDate = new Date();
+    const currentUser = req.user._id;
+    const currentPage = (req.query.page && parseInt(req.query.page, 10)) || 1;
+    const currentType = (req.query.type || '').toLowerCase();
+    const currentLimit = (req.query.limit && parseInt(req.query.limit, 10)) || 10;
+    const newDate = new Date();
     newDate.setHours(0, 0, 0, 0);
-    var match = {
-        $or: [
-            {"checkin_date": {$gte: newDate}},
-            {"checkout_date": {$gte: newDate}}
-        ],
-        "created_by": user_id,
-    };
-    if ('past' === type_lower) {
-        sort = {'checkin_date': -1};
-        type = 'Past';
-        match = {
-            $and: [
-                {"checkin_date": {$lt: newDate}},
-                {"checkout_date": {$lt: newDate}}
-            ],
-            "created_by": user_id,
-        };
+
+    let type;
+    let sort;
+    let match;
+
+    switch (currentType) {
+        case 'current':
+            sort = {'checkin_date': 1};
+            type = 'Current';
+            match = {
+                $or: [
+                    {"checkin_date": {$gte: newDate}},
+                    {"checkout_date": {$gte: newDate}}
+                ],
+                "created_by": currentUser,
+            };
+
+            break;
+
+        case 'past':
+            sort = {'checkin_date': -1};
+            type = 'Past';
+            match = {
+                $and: [
+                    {"checkin_date": {$lt: newDate}},
+                    {"checkout_date": {$lt: newDate}}
+                ],
+                "created_by": currentUser,
+            };
+
+            break;
+
+        default:
+            sort = {'checkin_date': -1};
+            type = 'All';
+            match = {created_by: currentUser};
+
+            break;
     }
+
     req.active = 'hostels';
 
     async.parallel(
         [
-            function (next) {
+            (next) => {
                 Hostel.aggregate(
                     [
                         {$match: match},
                         {"$sort": sort},
-                        {"$skip": ((current_page - 1) * max_per_page)},
-                        {"$limit": max_per_page},
+                        {"$skip": ((currentPage - 1) * currentLimit)},
+                        {"$limit": currentLimit},
                         {
                             $project: {
                                 "_id": 1,
@@ -75,7 +93,7 @@ router.get('/', loggedIn, function (req, res, next) {
                             }
                         }
                     ],
-                    function (err, results) {
+                    (err, results) => {
                         if (err) {
                             return next(err);
                         }
@@ -86,7 +104,7 @@ router.get('/', loggedIn, function (req, res, next) {
                     }
                 );
             },
-            function (next) {
+            (next) => {
                 Hostel.aggregate(
                     [
                         {$match: match},
@@ -102,7 +120,7 @@ router.get('/', loggedIn, function (req, res, next) {
                             }
                         }
                     ],
-                    function (err, results) {
+                    (err, results) => {
                         var cost;
                         if (err) {
                             return next(err);
@@ -110,45 +128,45 @@ router.get('/', loggedIn, function (req, res, next) {
                         if (!results) {
                             return next();
                         }
-                        cost = undefined !== results[0] ? results[0].cost : '0';
+                        cost = (results[0] && results[0].cost) || '0';
                         next(err, cost);
                     }
                 );
             }
         ],
-        function (err, results) {
+        (err, results) => {
             if (err) {
                 return next(err);
             }
-            var bookings = results[0];
-            var cost = results[1];
-            var bookings_length = bookings.length;
+            const bookings = results[0];
+            const cost = results[1];
+            const bookingsLength = bookings.length;
 
             res.send(JSON.stringify({
                 title: type + ' hostels',
                 bookings: bookings,
-                current_page: current_page,
-                is_first_page: current_page === 1,
-                is_last_page: current_page * max_per_page >= bookings_length,
-                pages_count: bookings_length <= max_per_page ? 1 : Math.ceil(bookings_length / max_per_page),
-                max_per_page: max_per_page,
-                total_cost: bookings_length ? (cost / 100).toFixed(2) : '0.00',
-                average_cost: bookings_length > 0 ? ((cost / bookings_length) / 100).toFixed(2) : '0.00',
-                bookings_length: bookings_length,
-                active: type_lower,
+                current_page: currentPage,
+                is_first_page: currentPage === 1,
+                is_last_page: currentPage * currentLimit >= bookingsLength,
+                pages_count: currentLimit <= currentLimit ? 1 : Math.ceil(bookingsLength / currentLimit),
+                max_per_page: currentLimit,
+                total_cost: bookingsLength ? (cost / 100).toFixed(2) : '0.00',
+                average_cost: bookingsLength > 0 ? ((cost / bookingsLength) / 100).toFixed(2) : '0.00',
+                bookings_length: bookingsLength,
+                active: currentType,
                 selected: 'hostels'
             }));
         }
     );
 });
 
-router.get('/:id', loggedIn, loadHostel, function (req, res) {
+router.get('/:id', loggedIn, loadHostel, (req, res) => {
     res.send(JSON.stringify(req.hostel));
 });
 
-router.put('/:id', loggedIn, loadHostel, function(req, res) {
+router.put('/:id', loggedIn, loadHostel, (req, res) => {
     const hostel = req.body;
-    Hostel.update(hostel, function (err) {
+    Hostel.update(hostel, (err) => {
         if (err) {
             throw new Error(err);
         }
@@ -157,11 +175,11 @@ router.put('/:id', loggedIn, loadHostel, function(req, res) {
     });
 });
 
-router.post('/', loggedIn, function (req, res, next) {
+router.post('/', loggedIn, (req, res, next) => {
 
     var hostel = req.body;
     hostel.created_by = req.user._id;
-    Hostel.create(hostel, function (err) {
+    Hostel.create(hostel, (err) => {
         if (err) {
             if (err.code === 11000) {
                 res.status(409).send(JSON.stringify({ok: false, err: err}));
