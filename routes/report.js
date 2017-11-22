@@ -205,7 +205,6 @@ router.get('/', loggedIn, validateDates, function (req, res) {
             var buses_avg = data[4].avg_cost;
             var buses_singles_quantity = data[4].singles_quantity;
             var planes_cost = data[5].cost;
-            ;
             var planes_avg = data[5].avg_cost;
             var planes_singles_quantity = data[5].singles_quantity;
             var trains_cost = data[6].cost;
@@ -219,8 +218,8 @@ router.get('/', loggedIn, validateDates, function (req, res) {
                     planes: planes,
                     trains: trains,
                     hostels: hostels,
-                    buses_cost: (buses_cost / 100).toFixed(2),
-                    buses_avg: (buses_avg / 100).toFixed(2),
+                    buses_cost: buses_cost.toFixed(2),
+                    buses_avg: buses_avg.toFixed(2),
                     planes_cost: (planes_cost / 100).toFixed(2),
                     planes_avg: (planes_avg / 100).toFixed(2),
                     trains_cost: (trains_cost / 100).toFixed(2),

@@ -22,39 +22,39 @@ router.get('/', loggedIn, (req, res, next) => {
 
     switch (currentType) {
         case 'current':
-            sort = {'departure_date': 1};
+            sort = {departure_date: 1};
             type = 'Current';
             match = {
                 $or: [
-                    {"departure_date": {$gte: newDate}},
-                    {"return_departure_date": {$gte: newDate}}
+                    {departure_date: {$gte: newDate}},
+                    {return_departure_date: {$gte: newDate}}
                 ],
-                "created_by": currentUser,
+                created_by: currentUser,
             };
 
             break;
 
         case 'past':
-            sort = {'departure_date': -1};
+            sort = {departure_date: -1};
             type = 'Past';
             match = {
                 $and: [
-                    {"departure_date": {$lt: newDate}},
+                    {departure_date: {$lt: newDate}},
                     {
                         $or: [
-                            {"return_departure_date": {$lt: newDate}},
-                            {"return_departure_date": {$eq: null}},
-                            {"return_departure_date": {$eq: ""}}
+                            {return_departure_date: {$lt: newDate}},
+                            {return_departure_date: {$eq: null}},
+                            {return_departure_date: {$eq: ""}}
                         ]
                     }
                 ],
-                "created_by": currentUser,
+                created_by: currentUser,
             };
 
             break;
 
         default:
-            sort = {'departure_date': -1};
+            sort = {departure_date: -1};
             type = 'All';
             match = {created_by: currentUser};
 
@@ -69,67 +69,31 @@ router.get('/', loggedIn, (req, res, next) => {
                 Bus.aggregate(
                     [
                         {$match: match},
-                        {"$sort": sort},
-                        {"$skip": ((currentPage - 1) * currentLimit)},
-                        {"$limit": currentLimit},
+                        {$sort: sort},
+                        {$skip: ((currentPage - 1) * currentLimit)},
+                        {$limit: currentLimit},
                         {
                             $project: {
-                                "_id": 1,
-                                "booking_number": 1,
-                                "from": 1,
-                                "to": 1,
-                                "departure_date": {
+                                booking_number: 1,
+                                from: 1,
+                                to: 1,
+                                departure_date: {
                                     "$dateToString": {
-                                        "format": "%d/%m/%Y",
+                                        "format": "%Y-%m-%d",
                                         "date": "$departure_date"
                                     }
                                 },
-                                "departure_time": {
-                                    "$concat": [
-                                        {"$substr": ["$departure_time", 0, 2]},
-                                        ":",
-                                        {"$substr": ["$departure_time", 2, 4]}
-                                    ]
-                                },
-                                "arrival_time": {
-                                    "$concat": [
-                                        {"$substr": ["$arrival_time", 0, 2]},
-                                        ":",
-                                        {"$substr": ["$arrival_time", 2, 4]}
-                                    ]
-                                },
-                                "return_departure_date": {
+                                return_departure_date: {
                                     $cond: ["$is_return", {
                                         "$dateToString": {
-                                            "format": "%d/%m/%Y",
+                                            "format": "%Y-%m-%d",
                                             "date": "$return_departure_date"
                                         }
                                     }, null]
                                 },
-                                "return_departure_time": {
-                                    $cond: ["$is_return", {
-                                        "$concat": [
-                                            {"$substr": ["$return_departure_time", 0, 2]},
-                                            ":",
-                                            {"$substr": ["$return_departure_time", 2, 4]}
-                                        ]
-                                    }, null]
-                                },
-                                "return_arrival_time": {
-                                    $cond: ["$is_return", {
-                                        "$concat": [
-                                            {"$substr": ["$return_arrival_time", 0, 2]},
-                                            ":",
-                                            {"$substr": ["$return_arrival_time", 2, 4]}
-                                        ]
-                                    }, null]
-                                },
-                                "price": {
-                                    "$divide": ["$price", 100]
-                                },
-                                "created_by": 1,
-                                "currency": 1,
-                                "is_return": 1
+                                price: 1,
+                                created_by: 1,
+                                is_return: 1
                             }
                         }
                     ],

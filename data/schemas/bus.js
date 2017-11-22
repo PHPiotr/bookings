@@ -46,7 +46,7 @@ var BusSchema = new Schema({
     price: {
         type: Number,
         get: function (number) {
-            return (number / 100).toFixed(2);
+            return number.toFixed(2);
         },
         set: function(number) {
             var str = number.toString();

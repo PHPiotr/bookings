@@ -38,9 +38,7 @@ function loadBus(req, res, next) {
                                 },
                                 return_departure_time: 1,
                                 return_arrival_time: 1,
-                                price: {
-                                    $divide: ["$price", 100]
-                                },
+                                price: 1,
                                 created_by: 1,
                                 currency: 1,
                                 is_return: 1,
