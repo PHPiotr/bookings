@@ -39,13 +39,8 @@ var TrainSchema = new Schema({
     },
     price: {
         type: Number,
-        get: function (number) {
-            return (number / 100).toFixed(2);
-        },
-        set: function(number) {
-            var str = number.toString();
-            return parseInt(str.replace(/\D/g, ""));
-        },
+        get: number => number.toFixed(2),
+        set: number => number.toFixed(2),
         required: true
     },
     currency: {
