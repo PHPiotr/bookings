@@ -18,6 +18,7 @@ var api_prefix = process.env.API_PREFIX;
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", process.env.CORS_ACCESS_CONTROL_ALLOW_ORIGIN);
     res.header("Access-Control-Allow-Headers", process.env.CORS_ACCESS_CONTROL_ALLOW_HEADERS);
+    res.header("Access-Control-Allow-Methods", process.env.CORS_ACCESS_CONTROL_ALLOW_METHODS);
     res.io = io;
     next();
 });

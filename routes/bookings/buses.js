@@ -2,6 +2,7 @@ const async = require('async');
 const Bus = require('../../data/models/bus');
 const loggedIn = require('../middleware/logged_in');
 const loadBus = require('../middleware/load_bus');
+const loadBusForUpdate = require('../middleware/load_bus_for_update');
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -215,13 +216,18 @@ router.get('/:id', loggedIn, loadBus, (req, res) => {
     res.send(JSON.stringify(req.bus));
 });
 
-router.put('/:id', loggedIn, loadBus, (req, res) => {
-    const bus = req.body;
-    Bus.update(bus, (err) => {
+router.put('/:id', loggedIn, loadBusForUpdate, (req, res) => {
+    console.log('After loadBus req.body:', req.body);
+    console.log('After loadBus req.bus:', req.bus);
+
+    const query = {"booking_number": req.bus.booking_number};
+    const update = {"$set": req.body};
+    Bus.update(query, update, (err) => {
         if (err) {
+            console.error(err);
             throw new Error(err);
         }
-        res.io.emit('update_bus', bus);
+        res.io.emit('update_bus');
         res.status(204).send();
     });
 });
