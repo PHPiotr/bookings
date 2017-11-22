@@ -181,11 +181,8 @@ router.get('/:id', loggedIn, loadBus, (req, res) => {
 });
 
 router.put('/:id', loggedIn, loadBusForUpdate, (req, res) => {
-    console.log('After loadBus req.body:', req.body);
-    console.log('After loadBus req.bus:', req.bus);
-
-    const query = {"booking_number": req.bus.booking_number};
-    const update = {"$set": req.body};
+    const query = {booking_number: req.bus.booking_number};
+    const update = {$set: req.body};
     Bus.update(query, update, (err) => {
         if (err) {
             console.error(err);

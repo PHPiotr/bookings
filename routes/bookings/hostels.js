@@ -2,6 +2,7 @@ const async = require('async');
 const Hostel = require('../../data/models/hostel');
 const loggedIn = require('../middleware/logged_in');
 const loadHostel = require('../middleware/load_hostel');
+const loadHostelForUpdate = require('../middleware/load_hostel_for_update');
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -164,13 +165,15 @@ router.get('/:id', loggedIn, loadHostel, (req, res) => {
     res.send(JSON.stringify(req.hostel));
 });
 
-router.put('/:id', loggedIn, loadHostel, (req, res) => {
-    const hostel = req.body;
-    Hostel.update(hostel, (err) => {
+router.put('/:id', loggedIn, loadHostelForUpdate, (req, res) => {
+    const query = {booking_number: req.bus.booking_number};
+    const update = {$set: req.body};
+    Hostel.update(query, update, (err) => {
         if (err) {
+            console.error(err);
             throw new Error(err);
         }
-        res.io.emit('update_hostel', hostel);
+        res.io.emit('update_hostel');
         res.status(204).send();
     });
 });
