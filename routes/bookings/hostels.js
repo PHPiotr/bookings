@@ -166,7 +166,7 @@ router.get('/:id', loggedIn, loadHostel, (req, res) => {
 });
 
 router.put('/:id', loggedIn, loadHostelForUpdate, (req, res) => {
-    const query = {booking_number: req.bus.booking_number};
+    const query = {booking_number: req.hostel.booking_number};
     const update = {$set: req.body};
     Hostel.update(query, update, (err) => {
         if (err) {

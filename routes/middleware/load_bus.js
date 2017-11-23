@@ -4,9 +4,6 @@ const async = require('async');
 function loadBus(req, res, next) {
 
     const match = {booking_number: req.params.id, created_by: req.user._id};
-
-    req.active = 'buses';
-
     async.parallel(
         [
             (next) => {
@@ -67,4 +64,4 @@ function loadBus(req, res, next) {
     );
 }
 
-module.exports = loadBus
+module.exports = loadBus;
