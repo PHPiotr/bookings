@@ -143,7 +143,6 @@ router.get('/', loggedIn, (req, res, next) => {
             const bookingsLength = bookings.length;
 
             res.send(JSON.stringify({
-                title: type + ' hostels',
                 bookings: bookings,
                 current_page: currentPage,
                 is_first_page: currentPage === 1,
@@ -154,7 +153,6 @@ router.get('/', loggedIn, (req, res, next) => {
                 average_cost: bookingsLength > 0 ? (cost / bookingsLength).toFixed(2) : '0.00',
                 bookings_length: bookingsLength,
                 active: currentType,
-                selected: 'hostels'
             }));
         }
     );

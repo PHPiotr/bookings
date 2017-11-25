@@ -161,7 +161,6 @@ router.get('/', loggedIn, (req, res, next) => {
             const returnJourneysLength = journeysExist ? results[1].return_journeys_length : 0;
 
             res.send(JSON.stringify({
-                title: type + ' trains',
                 journeys: journeys,
                 current_page: currentPage,
                 is_first_page: currentPage === 1,
@@ -173,7 +172,6 @@ router.get('/', loggedIn, (req, res, next) => {
                 journeys_length: journeysLength,
                 return_journeys_length: returnJourneysLength,
                 active: currentType,
-                selected: 'trains'
             }));
         }
     );

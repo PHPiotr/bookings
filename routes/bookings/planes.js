@@ -199,7 +199,6 @@ router.get('/', loggedIn, (req, res, next) => {
             const returnJourneysLength = journeysExist ? results[1].return_flights_length : 0;
 
             res.send(JSON.stringify({
-                title: type + ' flights',
                 flights: journeys,
                 current_page: currentPage,
                 is_first_page: currentPage === 1,
@@ -211,7 +210,6 @@ router.get('/', loggedIn, (req, res, next) => {
                 flights_length: journeysLength,
                 return_flights_length: returnJourneysLength,
                 active: currentType,
-                selected: 'planes'
             }));
         }
     );
