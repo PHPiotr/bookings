@@ -1,6 +1,6 @@
-var Schema = require('mongoose').Schema;
+const Schema = require('mongoose').Schema;
 
-var FlightSchema = new Schema({
+const FlightSchema = new Schema({
     confirmation_code: {
         type: String,
         unique: true,
@@ -69,10 +69,9 @@ var FlightSchema = new Schema({
         created_at: {
             type: Date,
             'default': Date.now,
-            set: function (val) {
-                return undefined;
-            }
-        }, timezone_offset: {
+            set: () => undefined,
+        },
+        timezone_offset: {
             type: String,
             'default': (new Date()).getTimezoneOffset()
         },

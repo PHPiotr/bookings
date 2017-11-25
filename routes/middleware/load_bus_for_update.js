@@ -1,7 +1,8 @@
 const Bus = require('../../data/models/bus');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 function loadBus(req, res, next) {
-    Bus.findOne({booking_number: req.params.id})
+    Bus.findOne({_id: new ObjectId(req.params.id)})
         .exec(function (err, bus) {
             if (err) {
                 return next(err);

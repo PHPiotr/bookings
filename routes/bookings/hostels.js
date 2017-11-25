@@ -6,6 +6,7 @@ const loadHostelForUpdate = require('../middleware/load_hostel_for_update');
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 router.get('/', loggedIn, (req, res, next) => {
 
@@ -161,12 +162,12 @@ router.get('/', loggedIn, (req, res, next) => {
     );
 });
 
-router.get('/:id', loggedIn, loadHostel, (req, res) => {
+router.get('/:id', loggedIn, loadHostelForUpdate, (req, res) => {
     res.send(JSON.stringify(req.hostel));
 });
 
 router.put('/:id', loggedIn, loadHostelForUpdate, (req, res) => {
-    const query = {booking_number: req.hostel.booking_number};
+    const query = {_id: new ObjectId(req.hostel.id)};
     const update = {$set: req.body};
     Hostel.update(query, update, (err) => {
         if (err) {

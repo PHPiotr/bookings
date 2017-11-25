@@ -1,5 +1,5 @@
-var Schema = require('mongoose').Schema;
-var TrainSchema = new Schema({
+const Schema = require('mongoose').Schema;
+const TrainSchema = new Schema({
     from: {
         type: String,
         required: true
@@ -61,9 +61,7 @@ var TrainSchema = new Schema({
         created_at: {
             type: Date,
             'default': Date.now,
-            set: function (val) {
-                return undefined;
-            }
+            set: () => undefined,
         },
         updated_at: {
             type: Date,

@@ -1,6 +1,8 @@
 const Hostel = require('../../data/models/hostel');
+const ObjectId = require('mongoose').Types.ObjectId;
+
 function loadHostel(req, res, next) {
-    Hostel.findOne({booking_number: req.params.id})
+    Hostel.findOne({_id: new ObjectId(req.params.id)})
         .exec(function (err, hostel) {
             if (err) {
                 return next(err);

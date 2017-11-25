@@ -6,6 +6,7 @@ const loadBusForUpdate = require('../middleware/load_bus_for_update');
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 router.get('/', loggedIn, (req, res, next) => {
 
@@ -176,12 +177,12 @@ router.get('/', loggedIn, (req, res, next) => {
     );
 });
 
-router.get('/:id', loggedIn, loadBus, (req, res) => {
+router.get('/:id', loggedIn, loadBusForUpdate, (req, res) => {
     res.send(JSON.stringify(req.bus));
 });
 
 router.put('/:id', loggedIn, loadBusForUpdate, (req, res) => {
-    const query = {booking_number: req.bus.booking_number};
+    const query = {_id: new ObjectId(req.bus._id)};
     const update = {$set: req.body};
     Bus.update(query, update, (err) => {
         if (err) {

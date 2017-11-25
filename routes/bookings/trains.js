@@ -2,12 +2,13 @@ const async = require('async');
 const Train = require('../../data/models/train');
 const loggedIn = require('../middleware/logged_in');
 const loadTrain = require('../middleware/load_train');
+const loadTrainForUpdate = require('../middleware/load_train_for_update');
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 
 router.get('/', loggedIn, (req, res, next) => {
-
 
     const currentUser = req.user._id;
     const currentPage = (req.query.page && parseInt(req.query.page, 10)) || 1;
@@ -79,21 +80,19 @@ router.get('/', loggedIn, (req, res, next) => {
                                 "to": 1,
                                 "departure_date": {
                                     "$dateToString": {
-                                        "format": "%d/%m/%Y",
+                                        "format": "%Y-%m-%d",
                                         "date": "$departure_date"
                                     }
                                 },
                                 "return_departure_date": {
                                     $cond: ["$is_return", {
                                         "$dateToString": {
-                                            "format": "%d/%m/%Y",
+                                            "format": "%Y-%m-%d",
                                             "date": "$return_departure_date"
                                         }
                                     }, null]
                                 },
-                                "price": {
-                                    "$divide": ["$price", 100]
-                                },
+                                "price": 1,
                                 "created_by": 1,
                                 "currency": 1,
                                 "is_return": 1
@@ -180,17 +179,19 @@ router.get('/', loggedIn, (req, res, next) => {
     );
 });
 
-router.get('/:id', loggedIn, loadTrain, (req, res) => {
+router.get('/:id', loggedIn, loadTrainForUpdate, (req, res) => {
     res.send(JSON.stringify(req.train));
 });
 
-router.put('/:id', loggedIn, loadTrain, (req, res) => {
-    const train = req.body;
-    Train.update(train, (err) => {
+router.put('/:id', loggedIn, loadTrainForUpdate, (req, res) => {
+    const query = {_id: new ObjectId(req.train._id)};
+    const update = {$set: req.body};
+    Train.update(query, update, (err) => {
         if (err) {
+            console.error(err);
             throw new Error(err);
         }
-        res.io.emit('update_train', train);
+        res.io.emit('update_train');
         res.status(204).send();
     });
 });
