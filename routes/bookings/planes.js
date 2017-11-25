@@ -125,9 +125,7 @@ router.get('/', loggedIn, (req, res, next) => {
                                         ]
                                     }, null]
                                 },
-                                "price": {
-                                    "$divide": ["$price", 100]
-                                },
+                                "price": 1,
                                 "created_by": 1,
                                 "seat": 1,
                                 "return_seat": {
@@ -208,8 +206,8 @@ router.get('/', loggedIn, (req, res, next) => {
                 is_last_page: currentPage * currentLimit >= journeysLength,
                 pages_count: journeysLength <= currentLimit ? 1 : Math.ceil(journeysLength / currentLimit),
                 max_per_page: currentLimit,
-                total_cost: journeysLength ? (cost / 100).toFixed(2) : '0.00',
-                average_cost: journeysLength ? (averageCost / 100).toFixed(2) : '0.00',
+                total_cost: journeysLength ? cost.toFixed(2) : '0.00',
+                average_cost: journeysLength ? averageCost.toFixed(2) : '0.00',
                 flights_length: journeysLength,
                 return_flights_length: returnJourneysLength,
                 active: currentType,

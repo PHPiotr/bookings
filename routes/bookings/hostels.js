@@ -85,9 +85,7 @@ router.get('/', loggedIn, (req, res, next) => {
                                         "date": "$checkout_date"
                                     }
                                 },
-                                "price": {
-                                    "$divide": ["$price", 100]
-                                },
+                                "price": 1,
                                 "hostel_name": 1,
                                 "hostel_address": 1,
                                 "created_by": 1,
@@ -152,8 +150,8 @@ router.get('/', loggedIn, (req, res, next) => {
                 is_last_page: currentPage * currentLimit >= bookingsLength,
                 pages_count: currentLimit <= currentLimit ? 1 : Math.ceil(bookingsLength / currentLimit),
                 max_per_page: currentLimit,
-                total_cost: bookingsLength ? (cost / 100).toFixed(2) : '0.00',
-                average_cost: bookingsLength > 0 ? ((cost / bookingsLength) / 100).toFixed(2) : '0.00',
+                total_cost: bookingsLength ? cost.toFixed(2) : '0.00',
+                average_cost: bookingsLength > 0 ? (cost / bookingsLength).toFixed(2) : '0.00',
                 bookings_length: bookingsLength,
                 active: currentType,
                 selected: 'hostels'
