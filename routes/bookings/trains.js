@@ -2,7 +2,6 @@ const async = require('async');
 const Train = require('../../data/models/train');
 const loggedIn = require('../middleware/logged_in');
 const loadTrain = require('../middleware/load_train');
-const loadTrainForUpdate = require('../middleware/load_train_for_update');
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -177,11 +176,11 @@ router.get('/', loggedIn, (req, res, next) => {
     );
 });
 
-router.get('/:id', loggedIn, loadTrainForUpdate, (req, res) => {
+router.get('/:id', loggedIn, loadTrain, (req, res) => {
     res.send(JSON.stringify(req.train));
 });
 
-router.put('/:id', loggedIn, loadTrainForUpdate, (req, res) => {
+router.put('/:id', loggedIn, loadTrain, (req, res) => {
     const query = {_id: new ObjectId(req.train._id)};
     const update = {$set: req.body};
     Train.update(query, update, (err) => {

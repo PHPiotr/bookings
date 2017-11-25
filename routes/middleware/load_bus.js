@@ -1,67 +1,21 @@
 const Bus = require('../../data/models/bus');
-const async = require('async');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 function loadBus(req, res, next) {
-
-    const match = {booking_number: req.params.id, created_by: req.user._id};
-    async.parallel(
-        [
-            (next) => {
-                Bus.aggregate(
-                    [
-                        {$match: match},
-                        {$limit: 1},
-                        {
-                            $project: {
-                                _id: 1,
-                                booking_number: 1,
-                                from: 1,
-                                to: 1,
-                                departure_date: {
-                                    $dateToString: {
-                                        format: "%Y-%m-%d",
-                                        date: "$departure_date"
-                                    }
-                                },
-                                departure_time: 1,
-                                arrival_time: 1,
-                                return_departure_date: {
-                                    $cond: ["$is_return", {
-                                        $dateToString: {
-                                            format: "%Y-%m-%d",
-                                            date: "$return_departure_date"
-                                        }
-                                    }, null]
-                                },
-                                return_departure_time: 1,
-                                return_arrival_time: 1,
-                                price: 1,
-                                created_by: 1,
-                                currency: 1,
-                                is_return: 1,
-                            }
-                        }
-                    ],
-                    (err, results) => {
-                        if (err) {
-                            return next(err);
-                        }
-                        if (!results && !results[0]) {
-                            return next();
-                        }
-                        next(err, results[0]);
-                    }
-                );
-            }
-        ],
-        (err, results) => {
-            if (err || !results[0]) {
+    Bus.findOne({_id: new ObjectId(req.params.id)})
+        .exec(function (err, bus) {
+            if (err) {
                 return next(err);
             }
-            req.bus = results[0];
+            if (!bus) {
+                return res.status(404).send('Not found');
+            }
+            if (req.user._id != bus.created_by.toString()) {
+                return res.status(403).send(JSON.stringify(['Forbidden']));
+            }
+            req.bus = bus;
             next();
-        }
-    );
+        });
 }
 
 module.exports = loadBus;

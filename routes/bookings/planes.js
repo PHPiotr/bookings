@@ -2,7 +2,6 @@ const async = require('async');
 const Plane = require('../../data/models/flight');
 const loggedIn = require('../middleware/logged_in');
 const loadPlane = require('../middleware/load_plane');
-const loadPlaneForUpdate = require('../middleware/load_plane_for_update');
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -215,11 +214,11 @@ router.get('/', loggedIn, (req, res, next) => {
     );
 });
 
-router.get('/:id', loggedIn, loadPlaneForUpdate, (req, res) => {
+router.get('/:id', loggedIn, loadPlane, (req, res) => {
     res.send(JSON.stringify(req.plane));
 });
 
-router.put('/:id', loggedIn, loadPlaneForUpdate, (req, res) => {
+router.put('/:id', loggedIn, loadPlane, (req, res) => {
     const query = {_id: new ObjectId(req.plane.id)};
     const update = {$set: req.body};
     Plane.update(query, update, (err) => {
