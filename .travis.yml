@@ -1,6 +1,7 @@
 language: node_js
 node_js:
 - stable
+after_success: ./tools/merge-development-with-master.sh
 sudo: false
 deploy:
   provider: heroku
