@@ -39,8 +39,8 @@ const TrainSchema = new Schema({
     },
     price: {
         type: Number,
-        get: number => number.toFixed(2),
-        set: number => number.toFixed(2),
+        get: number => parseFloat(number).toFixed(2),
+        set: number => parseFloat(number).toFixed(2),
         required: true
     },
     currency: {
