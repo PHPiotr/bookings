@@ -40,3 +40,4 @@ jspm_packages
 public/stylesheets/
 public/javascripts/
 /nbproject
+.env
