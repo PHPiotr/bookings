@@ -191,6 +191,18 @@ router.put('/:id', loggedIn, loadBus, (req, res) => {
     });
 });
 
+router.delete('/:id', loggedIn, loadBus, (req, res) => {
+    const query = {_id: new ObjectId(req.bus._id)};
+    Bus.delete(query, (err) => {
+        if (err) {
+            console.error(err);
+            throw new Error(err);
+        }
+        res.io.emit('delete_bus');
+        res.status(204).send();
+    });
+});
+
 router.post('/', loggedIn, (req, res, next) => {
 
     var bus = req.body;

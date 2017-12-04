@@ -231,6 +231,18 @@ router.put('/:id', loggedIn, loadPlane, (req, res) => {
     });
 });
 
+router.delete('/:id', loggedIn, loadPlane, (req, res) => {
+    const query = {_id: new ObjectId(req.plane.id)};
+    Plane.delete(query, (err) => {
+        if (err) {
+            console.error(err);
+            throw new Error(err);
+        }
+        res.io.emit('delete_plane');
+        res.status(204).send();
+    });
+});
+
 router.post('/', loggedIn, (req, res, next) => {
 
     var plane = req.body;

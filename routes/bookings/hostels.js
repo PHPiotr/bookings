@@ -174,6 +174,18 @@ router.put('/:id', loggedIn, loadHostel, (req, res) => {
     });
 });
 
+router.delete('/:id', loggedIn, loadHostel, (req, res) => {
+    const query = {_id: new ObjectId(req.hostel.id)};
+    Hostel.delete(query, (err) => {
+        if (err) {
+            console.error(err);
+            throw new Error(err);
+        }
+        res.io.emit('delete_hostel');
+        res.status(204).send();
+    });
+});
+
 router.post('/', loggedIn, (req, res, next) => {
 
     var hostel = req.body;
