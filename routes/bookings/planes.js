@@ -199,15 +199,15 @@ router.get('/', loggedIn, (req, res, next) => {
 
             res.send(JSON.stringify({
                 bookings: journeys,
-                current_page: currentPage,
-                is_first_page: currentPage === 1,
-                is_last_page: currentPage * currentLimit >= journeysLength,
-                pages_count: journeysLength <= currentLimit ? 1 : Math.ceil(journeysLength / currentLimit),
-                max_per_page: currentLimit,
-                total_cost: journeysLength ? cost.toFixed(2) : '0.00',
-                average_cost: journeysLength ? averageCost.toFixed(2) : '0.00',
-                bookings_length: journeysLength,
-                return_bookings_length: returnJourneysLength,
+                currentPage: currentPage,
+                isFirstPage: currentPage === 1,
+                isLastPage: currentPage * currentLimit >= journeysLength,
+                pagesCount: journeysLength <= currentLimit ? 1 : Math.ceil(journeysLength / currentLimit),
+                maxPerPage: currentLimit,
+                totalCost: journeysLength ? cost.toFixed(2) : '0.00',
+                averageCost: journeysLength ? averageCost.toFixed(2) : '0.00',
+                bookingsLength: journeysLength,
+                returnBookingsLength: returnJourneysLength,
                 active: currentType,
             }));
         }
