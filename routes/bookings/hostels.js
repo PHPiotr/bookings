@@ -143,14 +143,15 @@ router.get('/', loggedIn, (req, res, next) => {
 
             res.send(JSON.stringify({
                 bookings: bookings,
-                current_page: currentPage,
-                is_first_page: currentPage === 1,
-                is_last_page: currentPage * currentLimit >= bookingsLength,
-                pages_count: currentLimit <= currentLimit ? 1 : Math.ceil(bookingsLength / currentLimit),
-                max_per_page: currentLimit,
-                total_cost: bookingsLength ? cost.toFixed(2) : '0.00',
-                average_cost: bookingsLength > 0 ? (cost / bookingsLength).toFixed(2) : '0.00',
-                bookings_length: bookingsLength,
+                currentPage: currentPage,
+                isFirstPage: currentPage === 1,
+                isLastPage: currentPage * currentLimit >= bookingsLength,
+                pagesCount: currentLimit <= currentLimit ? 1 : Math.ceil(bookingsLength / currentLimit),
+                maxPerPage: currentLimit,
+                totalCost: bookingsLength ? cost.toFixed(2) : '0.00',
+                averageCost: bookingsLength > 0 ? (cost / bookingsLength).toFixed(2) : '0.00',
+                bookingsLength: bookingsLength,
+                returnBookingsLength: null,
                 active: currentType,
             }));
         }
@@ -170,6 +171,18 @@ router.put('/:id', loggedIn, loadHostel, (req, res) => {
             throw new Error(err);
         }
         res.io.emit('update_hostel');
+        res.status(204).send();
+    });
+});
+
+router.delete('/:id', loggedIn, loadHostel, (req, res) => {
+    const query = {_id: new ObjectId(req.hostel.id)};
+    Hostel.delete(query, (err) => {
+        if (err) {
+            console.error(err);
+            throw new Error(err);
+        }
+        res.io.emit('delete_hostel');
         res.status(204).send();
     });
 });

@@ -158,16 +158,16 @@ router.get('/', loggedIn, (req, res, next) => {
             const returnJourneysLength = journeysExist ? results[1].return_journeys_length : 0;
 
             res.send(JSON.stringify({
-                journeys: journeys,
-                current_page: currentPage,
-                is_first_page: currentPage === 1,
-                is_last_page: currentPage * currentLimit >= journeysLength,
-                pages_count: journeysLength <= currentLimit ? 1 : Math.ceil(journeysLength / currentLimit),
-                max_per_page: currentLimit,
-                total_cost: journeysLength ? cost.toFixed(2) : '0.00',
-                average_cost: journeysLength ? averageCost.toFixed(2) : '0.00',
-                journeys_length: journeysLength,
-                return_journeys_length: returnJourneysLength,
+                bookings: journeys,
+                currentPage: currentPage,
+                isFirstPage: currentPage === 1,
+                isLastPage: currentPage * currentLimit >= journeysLength,
+                pagesCount: journeysLength <= currentLimit ? 1 : Math.ceil(journeysLength / currentLimit),
+                maxPerPage: currentLimit,
+                totalCost: journeysLength ? cost.toFixed(2) : '0.00',
+                averageCost: journeysLength ? averageCost.toFixed(2) : '0.00',
+                bookingsLength: journeysLength,
+                returnBookingsLength: returnJourneysLength,
                 active: currentType,
             }));
         }
@@ -187,6 +187,18 @@ router.put('/:id', loggedIn, loadBus, (req, res) => {
             throw new Error(err);
         }
         res.io.emit('update_bus');
+        res.status(204).send();
+    });
+});
+
+router.delete('/:id', loggedIn, loadBus, (req, res) => {
+    const query = {_id: new ObjectId(req.bus._id)};
+    Bus.delete(query, (err) => {
+        if (err) {
+            console.error(err);
+            throw new Error(err);
+        }
+        res.io.emit('delete_bus');
         res.status(204).send();
     });
 });

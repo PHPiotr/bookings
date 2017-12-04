@@ -218,19 +218,19 @@ router.get('/', loggedIn, validateDates, function (req, res) {
                     planes: planes,
                     trains: trains,
                     hostels: hostels,
-                    buses_cost: buses_cost.toFixed(2),
-                    buses_avg: buses_avg.toFixed(2),
-                    planes_cost: planes_cost.toFixed(2),
-                    planes_avg: planes_avg.toFixed(2),
-                    trains_cost: trains_cost.toFixed(2),
-                    trains_avg: trains_avg.toFixed(2),
-                    hostels_cost: hostels_cost.toFixed(2),
-                    hostels_avg: hostels_avg.toFixed(2),
-                    total_cost: (buses_cost + planes_cost + trains_cost + hostels_cost).toFixed(2),
-
-                    buses_singles_quantity: buses_singles_quantity,
-                    planes_singles_quantity: planes_singles_quantity,
-                    trains_singles_quantity: trains_singles_quantity
+                    busesCost: buses_cost.toFixed(2),
+                    busesAvg: buses_avg.toFixed(2),
+                    planesCost: planes_cost.toFixed(2),
+                    planesAvg: planes_avg.toFixed(2),
+                    trainsCost: trains_cost.toFixed(2),
+                    trainsAvg: trains_avg.toFixed(2),
+                    hostelsCost: hostels_cost.toFixed(2),
+                    hostelsAvg: hostels_avg.toFixed(2),
+                    totalCost: (buses_cost + planes_cost + trains_cost + hostels_cost).toFixed(2),
+                    busesSinglesQuantity: buses_singles_quantity,
+                    planesSinglesQuantity: planes_singles_quantity,
+                    trainsSinglesQuantity: trains_singles_quantity,
+                    hostelsSinglesQuantity: null,
                 }
             );
         }
