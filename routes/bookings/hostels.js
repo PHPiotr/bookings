@@ -151,6 +151,7 @@ router.get('/', loggedIn, (req, res, next) => {
                 total_cost: bookingsLength ? cost.toFixed(2) : '0.00',
                 average_cost: bookingsLength > 0 ? (cost / bookingsLength).toFixed(2) : '0.00',
                 bookings_length: bookingsLength,
+                return_bookings_length: null,
                 active: currentType,
             }));
         }

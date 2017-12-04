@@ -160,7 +160,7 @@ router.get('/', loggedIn, (req, res, next) => {
             const returnJourneysLength = journeysExist ? results[1].return_journeys_length : 0;
 
             res.send(JSON.stringify({
-                journeys: journeys,
+                bookings: journeys,
                 current_page: currentPage,
                 is_first_page: currentPage === 1,
                 is_last_page: currentPage * currentLimit >= journeysLength,
@@ -168,8 +168,8 @@ router.get('/', loggedIn, (req, res, next) => {
                 max_per_page: currentLimit,
                 total_cost: journeysLength ? cost.toFixed(2) : '0.00',
                 average_cost: journeysLength ? averageCost.toFixed(2) : '0.00',
-                journeys_length: journeysLength,
-                return_journeys_length: returnJourneysLength,
+                bookings_length: journeysLength,
+                return_bookings_length: returnJourneysLength,
                 active: currentType,
             }));
         }
