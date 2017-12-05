@@ -3,12 +3,14 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const app = require('../app');
 const should = chai.should();
+const mongoose = require('mongoose');
 
 const server = app.server;
 
 chai.use(chaiHttp);
 
 describe('Auth', () => {
+    after(() => mongoose.connection.close());
     describe('/GET /auth/login', () => {
         it('it should fail logging user in when no basic auth', (done) => {
             chai.request(server)
