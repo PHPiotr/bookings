@@ -1,28 +1,27 @@
-let auth = require('../routes/auth');
-let chai = require('chai');
-let chaiHttp = require('chai-http');
-let mongoose = require('mongoose');
-let app = require('../app');
-let should = chai.should;
+const auth = require('../routes/auth');
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const app = require('../app');
+const should = chai.should();
 
-let server = app.server;
+const server = app.server;
 
 chai.use(chaiHttp);
 
-const URL_PREFIX = process.env.API_PREFIX;
-
 describe('Auth', () => {
     describe('/GET /auth/login', () => {
-        it('it should have response status code 401 without basic auth header', (done) => {
-            chai.request(server).get(URL_PREFIX + '/auth/login').end((err, res) => {
-                res.should.have.status(401);
-                done();
-            });
-        });
-        it('it should have response status code 200 with valid basic auth header', (done) => {
+        it('it should fail logging user in when no basic auth', (done) => {
             chai.request(server)
-                .get(URL_PREFIX + '/auth/login')
-                .set('Authorization', 'Basic cGhwaW90cjQ6cGhwaW90cjQ=')
+                .get(`${process.env.API_PREFIX}/auth/login`)
+                .end((err, res) => {
+                    res.should.have.status(401);
+                    done();
+                });
+        });
+        it('it should succeed logging user in when correct basic auth', (done) => {
+            chai.request(server)
+                .get(`${process.env.API_PREFIX}/auth/login`)
+                .set('Authorization', `Basic ${process.env.AUTH_BASIC}`)
                 .end((err, res) => {
                     res.should.have.status(200);
                     done();
@@ -30,11 +29,13 @@ describe('Auth', () => {
         });
     });
     describe('/GET /auth/verify', () => {
-        it('it should have response status code 403 when user is not logged in', (done) => {
-            chai.request(server).get(URL_PREFIX + '/auth/verify').end((err, res) => {
-                res.should.have.status(403);
-                done();
-            });
+        it('it should fail verifying user when no bearer token', (done) => {
+            chai.request(server)
+                .get(`${process.env.API_PREFIX}/auth/verify`)
+                .end((err, res) => {
+                    res.should.have.status(403);
+                    done();
+                });
         });
     });
 });
