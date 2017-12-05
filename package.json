@@ -28,7 +28,7 @@
     "mocha": "^4.0.1"
   },
   "scripts": {
-    "test": "mocha --timeout 10000",
+    "test": "mocha",
     "start": "nf start"
   },
   "repository": {
