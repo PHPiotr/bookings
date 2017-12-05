@@ -28,7 +28,7 @@
     "mocha": "^4.0.1"
   },
   "scripts": {
-    "test": "mocha",
+    "test": "mocha --exit",
     "start": "nf start"
   },
   "repository": {
