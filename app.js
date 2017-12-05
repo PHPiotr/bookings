@@ -1,23 +1,23 @@
 require('dotenv').load();
 
-var express = require('express');
-var bodyParser = require('body-parser');
-var mongoose = require('mongoose');
-var index = require('./routes/index');
-var auth = require('./routes/auth');
-var users = require('./routes/users');
-var buses = require('./routes/bookings/buses');
-var planes = require('./routes/bookings/planes');
-var trains = require('./routes/bookings/trains');
-var hostels = require('./routes/bookings/hostels');
-var report = require('./routes/report');
+const express = require('express');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const index = require('./routes/index');
+const auth = require('./routes/auth');
+const users = require('./routes/users');
+const buses = require('./routes/bookings/buses');
+const planes = require('./routes/bookings/planes');
+const trains = require('./routes/bookings/trains');
+const hostels = require('./routes/bookings/hostels');
+const report = require('./routes/report');
 
-var app = express();
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
-var api_prefix = process.env.API_PREFIX;
+const app = express();
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
+const api_prefix = process.env.API_PREFIX;
 
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", process.env.CORS_ACCESS_CONTROL_ALLOW_ORIGIN);
     res.header("Access-Control-Allow-Headers", process.env.CORS_ACCESS_CONTROL_ALLOW_HEADERS);
     res.header("Access-Control-Allow-Methods", process.env.CORS_ACCESS_CONTROL_ALLOW_METHODS);
@@ -37,14 +37,14 @@ app.use(api_prefix + '/bookings/buses', buses);
 app.use(api_prefix + '/bookings/trains', trains);
 app.use(api_prefix + '/report', report);
 
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
     var err = new Error('Not Found');
     err.status = 404;
     next(err);
 
 });
 
-app.use(function (err, req, res) {
+app.use((err, req, res) => {
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
     res.status(err.status || 500);
