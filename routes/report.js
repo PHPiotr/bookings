@@ -1,66 +1,62 @@
-var async = require('async');
-var mongoose = require('mongoose');
-var loggedIn = require('./middleware/logged_in');
-var validateDates = require('./middleware/validate_dates');
+const async = require('async');
+const mongoose = require('mongoose');
+const loggedIn = require('./middleware/logged_in');
+const validateDates = require('./middleware/validate_dates');
 
-var Bus = require('../data/models/bus');
-var Plane = require('../data/models/flight');
-var Train = require('../data/models/train');
-var Hostel = require('../data/models/hostel');
+const Bus = require('../data/models/bus');
+const Plane = require('../data/models/flight');
+const Train = require('../data/models/train');
+const Hostel = require('../data/models/hostel');
 
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
-router.get('/', loggedIn, validateDates, function (req, res) {
+router.get('/', loggedIn, validateDates, (req, res) => {
 
-    var from, to, default_results, user_id, sort_type, criteria, journey_criteria, hostel_criteria;
+    const {from, to} = req.query;
+    const defaultResults = {cost: 0, avg_cost: 0, singles_quantity: '0'};
+    const userId = req.user._id;
+    const criteria = {'created_by': userId};
+    let sortType, journeyCriteria, hostelCriteria;
 
-    from = req.query.from;
-    to = req.query.to;
-    default_results = {cost: 0, avg_cost: 0, singles_quantity: '0'};
-    user_id = req.user._id;
     if (from && to) {
-        sort_type = {$gte: new Date(from), $lte: new Date(to)};
+        sortType = {$gte: new Date(from), $lte: new Date(to)};
     } else {
         if (from) {
-            sort_type = {$gte: new Date(from)};
+            sortType = {$gte: new Date(from)};
         }
         if (to) {
-            sort_type = {$lte: new Date(to)};
+            sortType = {$lte: new Date(to)};
         }
     }
 
-    criteria = {
-        'created_by': user_id
-    };
-    criteria['created_by'] = user_id;
-    if (sort_type) {
-        journey_criteria = Object.assign({}, criteria, {'departure_date': sort_type});
-        hostel_criteria = Object.assign({}, criteria, {'checkin_date': sort_type});
+    if (sortType) {
+        journeyCriteria = Object.assign({}, criteria, {'departure_date': sortType});
+        hostelCriteria = Object.assign({}, criteria, {'checkin_date': sortType});
     } else {
-        journey_criteria = criteria;
-        hostel_criteria = criteria;
+        journeyCriteria = criteria;
+        hostelCriteria = criteria;
     }
 
     async.parallel(
         [
-            function (next) {
-                Bus.find(journey_criteria).sort('departure_date').exec(next);
+            (next) => {
+                Bus.find(journeyCriteria).sort('departure_date').exec(next);
             },
-            function (next) {
-                Plane.find(journey_criteria).sort('departure_date').exec(next);
+            (next) => {
+                Plane.find(journeyCriteria).sort('departure_date').exec(next);
             },
-            function (next) {
-                Train.find(journey_criteria).sort('departure_date').exec(next);
+            (next) => {
+                Train.find(journeyCriteria).sort('departure_date').exec(next);
             },
-            function (next) {
-                Hostel.find(hostel_criteria).sort('checkin_date').exec(next);
+            (next) => {
+                Hostel.find(hostelCriteria).sort('checkin_date').exec(next);
             },
-            function (next) {
+            (next) => {
                 Bus.aggregate(
                     [
                         {
-                            $match: journey_criteria
+                            $match: journeyCriteria
                         },
                         {
                             $project: {
@@ -79,25 +75,25 @@ router.get('/', loggedIn, validateDates, function (req, res) {
                             }
                         }
                     ],
-                    function (err, results) {
+                    (err, results) => {
                         if (err) {
                             return next(err);
                         }
                         if (!results) {
-                            return next(err, default_results);
+                            return next(err, defaultResults);
                         }
                         if (undefined === results[0]) {
-                            return next(err, default_results);
+                            return next(err, defaultResults);
                         }
                         next(err, results[0]);
                     }
                 );
             },
-            function (next) {
+            (next) => {
                 Plane.aggregate(
                     [
                         {
-                            $match: journey_criteria
+                            $match: journeyCriteria
                         },
                         {
                             $project: {
@@ -116,25 +112,25 @@ router.get('/', loggedIn, validateDates, function (req, res) {
                             }
                         }
                     ],
-                    function (err, results) {
+                    (err, results) => {
                         if (err) {
                             return next(err);
                         }
                         if (!results) {
-                            return next(err, default_results);
+                            return next(err, defaultResults);
                         }
                         if (undefined === results[0]) {
-                            return next(err, default_results);
+                            return next(err, defaultResults);
                         }
                         next(err, results[0]);
                     }
                 );
             },
-            function (next) {
+            (next) => {
                 Train.aggregate(
                     [
                         {
-                            $match: journey_criteria
+                            $match: journeyCriteria
                         },
                         {
                             $project: {
@@ -153,25 +149,25 @@ router.get('/', loggedIn, validateDates, function (req, res) {
                             }
                         }
                     ],
-                    function (err, results) {
+                    (err, results) => {
                         if (err) {
                             return next(err);
                         }
                         if (!results) {
-                            return next(err, default_results);
+                            return next(err, defaultResults);
                         }
                         if (undefined === results[0]) {
-                            return next(err, default_results);
+                            return next(err, defaultResults);
                         }
                         next(err, results[0]);
                     }
                 );
             },
-            function (next) {
+            (next) => {
                 Hostel.aggregate(
                     [
                         {
-                            $match: hostel_criteria
+                            $match: hostelCriteria
                         },
                         {
                             $group: {
@@ -181,55 +177,40 @@ router.get('/', loggedIn, validateDates, function (req, res) {
                             }
                         }
                     ],
-                    function (err, results) {
+                    (err, results) => {
                         if (err) {
                             return next(err);
                         }
                         if (!results) {
-                            return next(err, default_results);
+                            return next(err, defaultResults);
                         }
                         if (undefined === results[0]) {
-                            return next(err, default_results);
+                            return next(err, defaultResults);
                         }
                         next(err, results[0]);
                     }
                 );
             }
         ],
-        function (error, data) {
-            var buses = data[0];
-            var planes = data[1];
-            var trains = data[2];
-            var hostels = data[3];
-            var buses_cost = data[4].cost;
-            var buses_avg = data[4].avg_cost;
-            var buses_singles_quantity = data[4].singles_quantity;
-            var planes_cost = data[5].cost;
-            var planes_avg = data[5].avg_cost;
-            var planes_singles_quantity = data[5].singles_quantity;
-            var trains_cost = data[6].cost;
-            var trains_avg = data[6].avg_cost;
-            var trains_singles_quantity = data[6].singles_quantity;
-            var hostels_cost = data[7].cost;
-            var hostels_avg = data[7].avg_cost;
+        (error, data) => {
             res.status(200).json(
                 {
-                    buses: buses,
-                    planes: planes,
-                    trains: trains,
-                    hostels: hostels,
-                    busesCost: buses_cost.toFixed(2),
-                    busesAvg: buses_avg.toFixed(2),
-                    planesCost: planes_cost.toFixed(2),
-                    planesAvg: planes_avg.toFixed(2),
-                    trainsCost: trains_cost.toFixed(2),
-                    trainsAvg: trains_avg.toFixed(2),
-                    hostelsCost: hostels_cost.toFixed(2),
-                    hostelsAvg: hostels_avg.toFixed(2),
-                    totalCost: (buses_cost + planes_cost + trains_cost + hostels_cost).toFixed(2),
-                    busesSinglesQuantity: buses_singles_quantity,
-                    planesSinglesQuantity: planes_singles_quantity,
-                    trainsSinglesQuantity: trains_singles_quantity,
+                    buses: data[0],
+                    planes: data[1],
+                    trains: data[2],
+                    hostels: data[3],
+                    busesCost: (data[4].cost).toFixed(2),
+                    busesAvg: (data[4].avg_cost).toFixed(2),
+                    planesCost: (data[5].cost).toFixed(2),
+                    planesAvg: (data[5].avg_cost).toFixed(2),
+                    trainsCost: (data[6].cost).toFixed(2),
+                    trainsAvg: (data[6].avg_cost).toFixed(2),
+                    hostelsCost: (data[7].cost).toFixed(2),
+                    hostelsAvg: (data[7].avg_cost).toFixed(2),
+                    totalCost: ((data[4].cost) + (data[5].cost) + (data[6].cost) + (data[7].cost)).toFixed(2),
+                    busesSinglesQuantity: data[4].singles_quantity,
+                    planesSinglesQuantity: data[5].singles_quantity,
+                    trainsSinglesQuantity: data[6].singles_quantity,
                     hostelsSinglesQuantity: null,
                 }
             );
