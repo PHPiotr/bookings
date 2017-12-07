@@ -45,11 +45,9 @@ router.post('/', (req, res) => {
                 }
             });
 
-            return res.status(201).json({
-                hash: token,
-                user: created,
-                success: true,
-            });
+            res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/users/${created._id}`);
+
+            return res.status(201).send();
         }
 
         if (err.name === 'ValidationError') {
@@ -64,22 +62,22 @@ router.post('/', (req, res) => {
 router.put('/:id', loggedInOrActivating, (req, res) => {
     try {
         if (req.decoded.sub != req.params.id) {
-            throw new Error('Invalid token');
+            throw Error('Invalid token');
         }
         if (req.user.active && req.decoded.purpose === 'activation') {
-            throw new Error('User already active');
+            throw Error('User already active');
         }
         if (!req.user.active && req.decoded.purpose === 'login') {
-            throw new Error('User not active');
+            throw Error('User not active');
         }
         User.update({_id: new ObjectId(req.params.id)}, {$set: req.decoded.purpose === 'login' ? req.body : {active: true}}, (err) => {
             if (err) {
-                throw new Error(err);
+                throw Error(err);
             }
             res.status(204).send();
         });
     } catch (e) {
-        res.status(400).json({err: {message: e.message}});
+        res.status(400).json({success: false, message: e.message});
     }
 });
 
