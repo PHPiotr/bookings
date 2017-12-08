@@ -14,9 +14,7 @@ describe('Users', () => {
     const username = 'hello';
     const password = 'hello';
     const body = {
-        activationFromEmail: 'no-reply@example.com',
-        activationUrl: 'http://www.example.com/register',
-        appName: 'Hello World',
+        suppressEmail: true,
         registration: {
             username,
             password,
