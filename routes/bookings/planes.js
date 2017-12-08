@@ -232,13 +232,10 @@ router.put('/:id', loggedIn, loadPlane, (req, res) => {
 });
 
 router.delete('/:id', loggedIn, loadPlane, (req, res) => {
-    const query = {_id: new ObjectId(req.plane.id)};
-    Plane.delete(query, (err) => {
+    Plane.remove({_id: new ObjectId(req.plane.id)}, (err) => {
         if (err) {
-            console.error(err);
-            throw new Error(err);
+            throw Error(err);
         }
-        res.io.emit('delete_plane');
         res.status(204).send();
     });
 });

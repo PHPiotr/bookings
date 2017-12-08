@@ -194,13 +194,10 @@ router.put('/:id', loggedIn, loadTrain, (req, res) => {
 });
 
 router.delete('/:id', loggedIn, loadTrain, (req, res) => {
-    const query = {_id: new ObjectId(req.train._id)};
-    Train.delete(query, (err) => {
+    Train.remove({_id: new ObjectId(req.train._id)}, (err) => {
         if (err) {
-            console.error(err);
-            throw new Error(err);
+            throw Error(err);
         }
-        res.io.emit('delete_train');
         res.status(204).send();
     });
 });

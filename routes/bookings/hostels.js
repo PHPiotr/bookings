@@ -176,13 +176,10 @@ router.put('/:id', loggedIn, loadHostel, (req, res) => {
 });
 
 router.delete('/:id', loggedIn, loadHostel, (req, res) => {
-    const query = {_id: new ObjectId(req.hostel.id)};
-    Hostel.delete(query, (err) => {
+    Hostel.remove({_id: new ObjectId(req.hostel.id)}, (err) => {
         if (err) {
-            console.error(err);
-            throw new Error(err);
+            throw Error(err);
         }
-        res.io.emit('delete_hostel');
         res.status(204).send();
     });
 });
