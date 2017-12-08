@@ -20,7 +20,7 @@ router.post('/', (req, res) => {
     User.create(user, (err, created) => {
         if (!err) {
             res.io.emit('user_created', created);
-            var token = jwt.sign({sub: created._id, purpose: 'activation'}, process.env.AUTH_SECRET, {algorithm: 'HS256'});
+            const token = jwt.sign({sub: created._id, purpose: 'activation'}, process.env.AUTH_SECRET, {algorithm: 'HS256'});
 
             const helper = sendgrid.mail;
             const fromEmail = new helper.Email(activationFromEmail, appName);
@@ -99,8 +99,7 @@ router.get('/:id', loggedIn, loadUser, (req, res, next) => {
 router.delete('/:id', loggedIn, loadUser, (req, res) => {
     User.remove({_id: new ObjectId(req.user._id)}, (err) => {
         if (err) {
-            console.error(err);
-            throw new Error(err);
+            throw Error(err);
         }
         res.status(204).send();
     });
