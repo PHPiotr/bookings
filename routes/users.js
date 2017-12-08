@@ -96,4 +96,14 @@ router.get('/:id', loggedIn, loadUser, (req, res, next) => {
     });
 });
 
+router.delete('/:id', loggedIn, loadUser, (req, res) => {
+    User.remove({_id: new ObjectId(req.user._id)}, (err) => {
+        if (err) {
+            console.error(err);
+            throw new Error(err);
+        }
+        res.status(204).send();
+    });
+});
+
 module.exports = router;
