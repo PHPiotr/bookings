@@ -123,5 +123,14 @@ describe('Auth', () => {
                     done();
                 });
         });
+        it('it should fail verifying user when bearer activation token used', (done) => {
+            chai.request(server)
+                .get(`${process.env.API_PREFIX}/auth/verify`)
+                .set('Authorization', `Bearer ${activationToken}`)
+                .end((err, res) => {
+                    res.should.have.status(403);
+                    done();
+                });
+        });
     });
 });
