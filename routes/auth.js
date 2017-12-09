@@ -26,17 +26,17 @@ router.get('/login', (req, res, next) => {
             return next(err);
         }
         if (!user) {
-            return fail(res, 'Username/password combination does not match', 403);
+            return fail(res, 'Username/password combination does not match', 401);
         }
         user.comparePassword(password, (err, isMatch) => {
             if (err) {
                 return next(err);
             }
             if (!isMatch) {
-                return fail(res, 'Username/password combination does not match', 403);
+                return fail(res, 'Username/password combination does not match', 401);
             }
             if (!user.active) {
-                return fail(res, 'Inactive user', 403);
+                return fail(res, 'Inactive user', 401);
             }
             const expiresIn = process.env.EXPIRES_IN;
             const token = jwt.sign({sub: user._id, purpose: 'login'}, process.env.AUTH_SECRET, {
