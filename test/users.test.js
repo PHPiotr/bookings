@@ -127,7 +127,7 @@ describe('Users', () => {
                 .get(`${process.env.API_PREFIX}/auth/login`)
                 .set('Authorization', `Bearer ${activationToken}`)
                 .end((err, res) => {
-                    res.should.have.status(403);
+                    res.should.have.status(401);
                     done();
                 });
         });
@@ -136,7 +136,7 @@ describe('Users', () => {
                 .get(`${process.env.API_PREFIX}/auth/login`)
                 .set('Authorization', `Bearer ${loginToken}`)
                 .end((err, res) => {
-                    res.should.have.status(403);
+                    res.should.have.status(401);
                     done();
                 });
         });
