@@ -95,6 +95,15 @@ describe('Auth', () => {
                     done();
                 });
         });
+        it('it should fail logging user in when incorrect basic auth', (done) => {
+            chai.request(server)
+                .get(`${process.env.API_PREFIX}/auth/login`)
+                .set('Authorization', `Basic incorrect`)
+                .end((err, res) => {
+                    res.should.have.status(401);
+                    done();
+                });
+        });
     });
     describe('/GET /auth/verify', () => {
         it('it should fail verifying user when no bearer token', (done) => {
