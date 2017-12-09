@@ -89,8 +89,8 @@ router.put('/:id', loggedInOrActivating, (req, res) => {
     }
 });
 
-router.get('/:id', loggedIn, loadUser, (req, res, next) => {
-    User.findOne({_id: new ObjectId(req.params.id)}, (err, user) => {
+router.get('/:username', loadUser, (req, res, next) => {
+    User.findOne({username: req.params.username}, (err, user) => {
         if (err) {
             return next(err);
         }
@@ -104,8 +104,8 @@ router.get('/:id', loggedIn, loadUser, (req, res, next) => {
     });
 });
 
-router.delete('/:id', loggedIn, loadUser, (req, res) => {
-    User.remove({_id: new ObjectId(req.user._id)}, (err) => {
+router.delete('/:username', loggedIn, (req, res) => {
+    User.remove({username: req.params.username}, (err) => {
         if (err) {
             throw Error(err);
         }
