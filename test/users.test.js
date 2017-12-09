@@ -26,12 +26,11 @@ describe('Users', () => {
     let loginToken;
     let activationToken;
 
-    before((done) => {
+    const cleanup = (done) => {
         chai.request(server)
             .get(`${process.env.API_PREFIX}/users/${username}`)
             .end((err, res) => {
                 if (err) {
-                    console.log('___before err');
                     return done();
                 }
                 if (res.statusCode !== 200) {
@@ -45,10 +44,12 @@ describe('Users', () => {
                 chai.request(server)
                     .delete(`${process.env.API_PREFIX}/users/${res.body.username}`)
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end((err, r) => {
-                        done();
-                    });
+                    .end(() => done());
             });
+    };
+
+    before((done) => {
+        cleanup(done);
     });
 
     beforeEach((done) => {
@@ -70,27 +71,7 @@ describe('Users', () => {
         });
     });
     after((done) => {
-        chai.request(server)
-            .get(`${process.env.API_PREFIX}/users/${username}`)
-            .end((err, res) => {
-                if (err) {
-                    console.log('___after err', err);
-                    return done();
-                }
-                if (res.statusCode !== 200) {
-                    return done();
-                }
-                loginToken = jwt.sign({
-                    sub: res.body._id,
-                    purpose: 'login'
-                }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
-                chai.request(server)
-                    .delete(`${process.env.API_PREFIX}/users/${res.body.username}`)
-                    .set('Authorization', `Bearer ${loginToken}`)
-                    .end((err, res) => {
-                        done()
-                    });
-            });
+        cleanup(done);
     });
     describe('Activation', () => {
         it('it should succeed activating user when activation token present', (done) => {
