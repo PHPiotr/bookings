@@ -69,7 +69,7 @@ describe('Users', () => {
         });
     });
 
-    after(done => cleanup(done));
+    afterEach(done => cleanup(done));
 
     describe('Activation', () => {
         it('it should succeed activating user when activation token present', (done) => {
@@ -90,7 +90,7 @@ describe('Users', () => {
                     done();
                 });
         });
-        it('it should fail activating user whit token whose purpose is login', (done) => {
+        it('it should fail activating user with token whose purpose is login', (done) => {
             chai.request(server)
                 .put(`${process.env.API_PREFIX}/users/${userId}`)
                 .set('Authorization', `Bearer ${loginToken}`)
