@@ -78,20 +78,20 @@ describe('Auth', () => {
     after(done => cleanup(done));
 
     describe('/GET /auth/login', () => {
-        it('it should fail logging user in when no basic auth', (done) => {
-            chai.request(server)
-                .get(`${process.env.API_PREFIX}/auth/login`)
-                .end((err, res) => {
-                    res.should.have.status(401);
-                    done();
-                });
-        });
         it('it should succeed logging user in when correct basic auth', (done) => {
             chai.request(server)
                 .get(`${process.env.API_PREFIX}/auth/login`)
                 .set('Authorization', `Basic ${basic}`)
                 .end((err, res) => {
                     res.should.have.status(200);
+                    done();
+                });
+        });
+        it('it should fail logging user in when no basic auth', (done) => {
+            chai.request(server)
+                .get(`${process.env.API_PREFIX}/auth/login`)
+                .end((err, res) => {
+                    res.should.have.status(401);
                     done();
                 });
         });
@@ -106,14 +106,6 @@ describe('Auth', () => {
         });
     });
     describe('/GET /auth/verify', () => {
-        it('it should fail verifying user when no bearer token', (done) => {
-            chai.request(server)
-                .get(`${process.env.API_PREFIX}/auth/verify`)
-                .end((err, res) => {
-                    res.should.have.status(403);
-                    done();
-                });
-        });
         it('it should succeed verifying user when bearer token present', (done) => {
             chai.request(server)
                 .get(`${process.env.API_PREFIX}/auth/verify`)
@@ -123,10 +115,27 @@ describe('Auth', () => {
                     done();
                 });
         });
+        it('it should fail verifying user when no bearer token', (done) => {
+            chai.request(server)
+                .get(`${process.env.API_PREFIX}/auth/verify`)
+                .end((err, res) => {
+                    res.should.have.status(403);
+                    done();
+                });
+        });
         it('it should fail verifying user when bearer activation token used', (done) => {
             chai.request(server)
                 .get(`${process.env.API_PREFIX}/auth/verify`)
                 .set('Authorization', `Bearer ${activationToken}`)
+                .end((err, res) => {
+                    res.should.have.status(403);
+                    done();
+                });
+        });
+        it('it should fail verifying user when bearer token malformed is', (done) => {
+            chai.request(server)
+                .get(`${process.env.API_PREFIX}/auth/verify`)
+                .set('Authorization', `Bearer j.w.t`)
                 .end((err, res) => {
                     res.should.have.status(403);
                     done();
