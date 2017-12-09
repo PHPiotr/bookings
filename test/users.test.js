@@ -48,9 +48,7 @@ describe('Users', () => {
             });
     };
 
-    before((done) => {
-        cleanup(done);
-    });
+    before(done => cleanup(done));
 
     beforeEach((done) => {
         chai.request(server).post(`${process.env.API_PREFIX}/users`).send(body).end((err, res) => {
@@ -70,9 +68,9 @@ describe('Users', () => {
             done();
         });
     });
-    after((done) => {
-        cleanup(done);
-    });
+
+    after(done => cleanup(done));
+
     describe('Activation', () => {
         it('it should succeed activating user when activation token present', (done) => {
             chai.request(server)
