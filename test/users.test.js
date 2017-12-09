@@ -11,25 +11,48 @@ chai.use(chaiHttp);
 
 describe('Users', () => {
 
-    const username = 'hello';
-    const password = 'hello';
+    const username = '__hello__';
+    const password = '__hello__';
     const body = {
         suppressEmail: true,
         registration: {
             username,
             password,
             email: 'hello@example.com',
-            repeatPassword: 'hello',
+            repeatPassword: password,
         },
     };
     let userId;
     let loginToken;
     let activationToken;
-    beforeEach((done) => {
+
+    const cleanup = (done) => {
         chai.request(server)
-            .post(`${process.env.API_PREFIX}/users`)
-            .send(body)
+            .get(`${process.env.API_PREFIX}/users/${username}`)
             .end((err, res) => {
+                if (err) {
+                    return done();
+                }
+                if (res.statusCode !== 200) {
+                    return done();
+                }
+                loginToken = jwt.sign({
+                    sub: res.body._id,
+                    purpose: 'login'
+                }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
+
+                chai.request(server)
+                    .delete(`${process.env.API_PREFIX}/users/${res.body.username}`)
+                    .set('Authorization', `Bearer ${loginToken}`)
+                    .end(() => done());
+            });
+    };
+
+    before(done => cleanup(done));
+
+    beforeEach((done) => {
+        chai.request(server).post(`${process.env.API_PREFIX}/users`).send(body).end((err, res) => {
+            if (res.statusCode === 201) {
                 const location = res.get('Location');
                 const parts = location.split('/');
                 userId = parts[parts.length - 1];
@@ -41,15 +64,13 @@ describe('Users', () => {
                     sub: userId,
                     purpose: 'activation'
                 }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
-                done();
-            });
+            }
+            done();
+        });
     });
-    afterEach((done) => {
-        chai.request(server)
-            .delete(`${process.env.API_PREFIX}/users/${userId}`)
-            .set('Authorization', `Bearer ${loginToken}`)
-            .end(() => done());
-    });
+
+    afterEach(done => cleanup(done));
+
     describe('Activation', () => {
         it('it should succeed activating user when activation token present', (done) => {
             chai.request(server)
@@ -69,7 +90,7 @@ describe('Users', () => {
                     done();
                 });
         });
-        it('it should fail activating user whit token whose purpose is login', (done) => {
+        it('it should fail activating user with token whose purpose is login', (done) => {
             chai.request(server)
                 .put(`${process.env.API_PREFIX}/users/${userId}`)
                 .set('Authorization', `Bearer ${loginToken}`)

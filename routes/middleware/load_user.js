@@ -1,8 +1,7 @@
 const User = require('../../data/models/user');
-const ObjectId = require('mongoose').Types.ObjectId;
 
 module.exports = (req, res, next) => {
-    User.findOne({_id: new ObjectId(req.params.id)}, (err, user) => {
+    User.findOne({username: req.params.username}, (err, user) => {
         if (err) {
             return next(err);
         }
