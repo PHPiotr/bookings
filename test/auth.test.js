@@ -97,18 +97,6 @@ describe('Auth', () => {
         });
     });
     describe('/GET /auth/verify', () => {
-
-        let token = '';
-        before((done) => {
-            chai.request(server)
-                .get(`${process.env.API_PREFIX}/auth/login`)
-                .set('Authorization', `Basic ${basic}`)
-                .end((err, res) => {
-                    token = res.body.token;
-                    done();
-                });
-        });
-
         it('it should fail verifying user when no bearer token', (done) => {
             chai.request(server)
                 .get(`${process.env.API_PREFIX}/auth/verify`)
