@@ -131,5 +131,14 @@ describe('Users', () => {
                     done();
                 });
         });
+        it('it should fail login user who is not active yet using login token', (done) => {
+            chai.request(server)
+                .get(`${process.env.API_PREFIX}/auth/login`)
+                .set('Authorization', `Bearer ${loginToken}`)
+                .end((err, res) => {
+                    res.should.have.status(403);
+                    done();
+                });
+        });
     });
 });
