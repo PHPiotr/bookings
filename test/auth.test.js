@@ -83,7 +83,14 @@ describe('Auth', () => {
                 .get(`${process.env.API_PREFIX}/auth/login`)
                 .set('Authorization', `Basic ${basic}`)
                 .end((err, res) => {
+                    should.not.exist(err);
                     res.should.have.status(200);
+                    should.exist(res.body);
+                    res.body.should.be.an('object');
+                    res.body.should.have.property('token');
+                    res.body.should.have.property('expiresIn');
+                    res.body.token.should.be.a('string');
+                    res.body.expiresIn.should.be.a('string');
                     done();
                 });
         });
