@@ -50,11 +50,4 @@ router.get('/login', (req, res, next) => {
     });
 });
 
-router.get('/verify', loggedIn, (req, res) => {
-    return res.status(200).json({
-        success: true,
-        message: 'Token verified'
-    });
-});
-
 module.exports = router;
