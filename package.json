@@ -17,7 +17,7 @@
     "jsonwebtoken": "^8.1.0",
     "method-override": "^2.3.10",
     "moment": "^2.19.3",
-    "mongodb": "^2.2.33",
+    "mongodb": "^3.0.0-rc0",
     "mongoose": "^4.13.6",
     "request": "^2.83.0",
     "sendgrid": "^5.2.3",
