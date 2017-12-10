@@ -21,7 +21,7 @@ const UserSchema = new mongoose.Schema({
         created_at: {
             type: Date,
             'default': Date.now,
-            set: val => null
+            set: val => undefined
         },
         updated_at: {
             type: Date,
@@ -38,20 +38,20 @@ UserSchema
         return [this.name.first, this.name.last].join(' ');
     })
     .set((fullName) => {
-        var nameComponents = fullName.split(' ');
+        const nameComponents = fullName.split(' ');
         this.name = {
             last: nameComponents.pop(),
             first: nameComponents.join(' ')
         };
     });
-UserSchema.pre('save', (next) => {
+UserSchema.pre('save', function (next) {
 
     const that = this;
 
     if (that.isNew) {
-        that.meta.created_at = null;
+        that.meta.created_at = Date.now;
     }
-    that.meta.updated_at = null;
+    that.meta.updated_at = Date.now;
 
     if (!this.isModified('password')) {
         return next();
@@ -65,7 +65,7 @@ UserSchema.pre('save', (next) => {
         next();
     });
 });
-UserSchema.methods.comparePassword = (candidatePassword, callback) => {
+UserSchema.methods.comparePassword = function (candidatePassword, callback) {
     bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
         if (err) {
             return callback(err);
