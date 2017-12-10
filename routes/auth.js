@@ -1,6 +1,5 @@
 const async = require('async');
 const User = require('../data/models/user');
-const loggedIn = require('./middleware/logged_in');
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
