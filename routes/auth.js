@@ -27,7 +27,7 @@ router.get('/login', (req, res, next) => {
         if (!user) {
             return fail(res, 'Username/password combination does not match', 401);
         }
-        user.comparePassword(password, (err, isMatch) => {
+        user.comparePassword(password, user.password, (err, isMatch) => {
             if (err) {
                 return next(err);
             }
