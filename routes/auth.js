@@ -1,6 +1,5 @@
 const async = require('async');
 const User = require('../data/models/user');
-const loggedIn = require('./middleware/logged_in');
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
@@ -47,13 +46,6 @@ router.get('/login', (req, res, next) => {
 
             res.json(body);
         });
-    });
-});
-
-router.get('/verify', loggedIn, (req, res) => {
-    return res.status(200).json({
-        success: true,
-        message: 'Token verified'
     });
 });
 
