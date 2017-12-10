@@ -1,10 +1,10 @@
-var mongoose = require('mongoose');
-var bcrypt = require('bcrypt-nodejs');
-var emailRegexp = /.+\@.+\..+/;
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt-nodejs');
+const emailRegexp = /.+\@.+\..+/;
 
 mongoose.Promise = require('bluebird');
 
-var UserSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
     username: {type: String, required: true, unique: true},
     name: mongoose.Schema.Types.Mixed,
     password: {type: String, required: true},
@@ -21,9 +21,7 @@ var UserSchema = new mongoose.Schema({
         created_at: {
             type: Date,
             'default': Date.now,
-            set: function (val) {
-                return undefined;
-            }
+            set: val => null
         },
         updated_at: {
             type: Date,
@@ -33,33 +31,33 @@ var UserSchema = new mongoose.Schema({
 });
 UserSchema
     .virtual('full_name')
-    .get(function () {
+    .get(() => {
         if (typeof this.name === 'string') {
             return this.name;
         }
         return [this.name.first, this.name.last].join(' ');
     })
-    .set(function (fullName) {
+    .set((fullName) => {
         var nameComponents = fullName.split(' ');
         this.name = {
             last: nameComponents.pop(),
             first: nameComponents.join(' ')
         };
     });
-UserSchema.pre('save', function (next) {
+UserSchema.pre('save', (next) => {
 
-    var that = this;
+    const that = this;
 
     if (that.isNew) {
-        that.meta.created_at = undefined;
+        that.meta.created_at = null;
     }
-    that.meta.updated_at = undefined;
+    that.meta.updated_at = null;
 
     if (!this.isModified('password')) {
         return next();
     }
 
-    bcrypt.hash(that.password, null, null, function (err, hash) {
+    bcrypt.hash(that.password, null, null, (err, hash) => {
         if (err) {
             return next(err);
         }
@@ -67,8 +65,8 @@ UserSchema.pre('save', function (next) {
         next();
     });
 });
-UserSchema.methods.comparePassword = function (candidatePassword, callback) {
-    bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
+UserSchema.methods.comparePassword = (candidatePassword, callback) => {
+    bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
         if (err) {
             return callback(err);
         }
