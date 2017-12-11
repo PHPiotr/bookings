@@ -97,6 +97,7 @@ describe('Auth', () => {
             chai.request(server)
                 .get(`${process.env.API_PREFIX}/auth/login`)
                 .end((err, res) => {
+                    should.exist(err);
                     res.should.have.status(401);
                     done();
                 });
@@ -106,6 +107,7 @@ describe('Auth', () => {
                 .get(`${process.env.API_PREFIX}/auth/login`)
                 .set('Authorization', 'Basic incorrect')
                 .end((err, res) => {
+                    should.exist(err);
                     res.should.have.status(401);
                     done();
                 });

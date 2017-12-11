@@ -76,6 +76,7 @@ describe('Users', () => {
                 .put(`${process.env.API_PREFIX}/users/${userId}`)
                 .set('Authorization', `Bearer ${activationToken}`)
                 .end((err, res) => {
+                    should.not.exist(err);
                     res.should.have.status(204);
                     done();
                 });
@@ -85,6 +86,7 @@ describe('Users', () => {
                 .put(`${process.env.API_PREFIX}/users/${userId}`)
                 .set('Authorization', 'Bearer malformed.json.webtoken')
                 .end((err, res) => {
+                    should.exist(err);
                     res.should.have.status(403);
                     done();
                 });
@@ -94,6 +96,7 @@ describe('Users', () => {
                 .put(`${process.env.API_PREFIX}/users/${userId}`)
                 .set('Authorization', `Bearer ${loginToken}`)
                 .end((err, res) => {
+                    should.exist(err);
                     res.should.have.status(400);
                     done();
                 });
@@ -109,6 +112,7 @@ describe('Users', () => {
                         .put(`${process.env.API_PREFIX}/users/${userId}`)
                         .set('Authorization', `Bearer ${activationToken}`)
                         .end((err, res) => {
+                            should.exist(err);
                             res.should.have.status(400);
                             done();
                         });
@@ -119,6 +123,7 @@ describe('Users', () => {
                 .put(`${process.env.API_PREFIX}/users/${userId}notexistinguser`)
                 .set('Authorization', `Bearer ${activationToken}`)
                 .end((err, res) => {
+                    should.exist(err);
                     res.should.have.status(400);
                     done();
                 });
@@ -128,6 +133,7 @@ describe('Users', () => {
                 .get(`${process.env.API_PREFIX}/auth/login`)
                 .set('Authorization', `Bearer ${activationToken}`)
                 .end((err, res) => {
+                    should.exist(err);
                     res.should.have.status(401);
                     done();
                 });
@@ -137,6 +143,7 @@ describe('Users', () => {
                 .get(`${process.env.API_PREFIX}/auth/login`)
                 .set('Authorization', `Bearer ${loginToken}`)
                 .end((err, res) => {
+                    should.exist(err);
                     res.should.have.status(401);
                     done();
                 });
