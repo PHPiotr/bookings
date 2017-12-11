@@ -26,10 +26,10 @@ router.get('/', loggedIn, (req, res, next) => {
             type = 'Current';
             match = {
                 $or: [
-                    {"checkin_date": {$gte: newDate}},
-                    {"checkout_date": {$gte: newDate}}
+                    {'checkin_date': {$gte: newDate}},
+                    {'checkout_date': {$gte: newDate}},
                 ],
-                "created_by": currentUser,
+                'created_by': currentUser,
             };
 
             break;
@@ -39,10 +39,10 @@ router.get('/', loggedIn, (req, res, next) => {
             type = 'Past';
             match = {
                 $and: [
-                    {"checkin_date": {$lt: newDate}},
-                    {"checkout_date": {$lt: newDate}}
+                    {'checkin_date': {$lt: newDate}},
+                    {'checkout_date': {$lt: newDate}},
                 ],
-                "created_by": currentUser,
+                'created_by': currentUser,
             };
 
             break;
@@ -63,34 +63,34 @@ router.get('/', loggedIn, (req, res, next) => {
                 Hostel.aggregate(
                     [
                         {$match: match},
-                        {"$sort": sort},
-                        {"$skip": ((currentPage - 1) * currentLimit)},
-                        {"$limit": currentLimit},
+                        {'$sort': sort},
+                        {'$skip': ((currentPage - 1) * currentLimit)},
+                        {'$limit': currentLimit},
                         {
                             $project: {
-                                "_id": 1,
-                                "from": 1,
-                                "to": 1,
-                                "booking_number": 1,
-                                "checkin_date": {
-                                    "$dateToString": {
-                                        "format": "%d/%m/%Y",
-                                        "date": "$checkin_date"
-                                    }
+                                '_id': 1,
+                                'from': 1,
+                                'to': 1,
+                                'booking_number': 1,
+                                'checkin_date': {
+                                    '$dateToString': {
+                                        'format': '%d/%m/%Y',
+                                        'date': '$checkin_date',
+                                    },
                                 },
-                                "checkout_date": {
-                                    "$dateToString": {
-                                        "format": "%d/%m/%Y",
-                                        "date": "$checkout_date"
-                                    }
+                                'checkout_date': {
+                                    '$dateToString': {
+                                        'format': '%d/%m/%Y',
+                                        'date': '$checkout_date',
+                                    },
                                 },
-                                "price": 1,
-                                "hostel_name": 1,
-                                "hostel_address": 1,
-                                "created_by": 1,
-                                "currency": 1
-                            }
-                        }
+                                'price': 1,
+                                'hostel_name': 1,
+                                'hostel_address': 1,
+                                'created_by': 1,
+                                'currency': 1,
+                            },
+                        },
                     ],
                     (err, results) => {
                         if (err) {
@@ -109,15 +109,15 @@ router.get('/', loggedIn, (req, res, next) => {
                         {$match: match},
                         {
                             $project: {
-                                price: 1
-                            }
+                                price: 1,
+                            },
                         },
                         {
                             $group: {
-                                _id: "$created_by",
-                                cost: {$sum: "$price"},
-                            }
-                        }
+                                _id: '$created_by',
+                                cost: {$sum: '$price'},
+                            },
+                        },
                     ],
                     (err, results) => {
                         var cost;
@@ -131,7 +131,7 @@ router.get('/', loggedIn, (req, res, next) => {
                         next(err, cost);
                     }
                 );
-            }
+            },
         ],
         (err, results) => {
             if (err) {

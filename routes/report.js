@@ -56,24 +56,24 @@ router.get('/', loggedIn, validateDates, (req, res) => {
                 Bus.aggregate(
                     [
                         {
-                            $match: journeyCriteria
+                            $match: journeyCriteria,
                         },
                         {
                             $project: {
                                 singles_quantity: {
-                                    $cond: ["$is_return", 2, 1]
+                                    $cond: ['$is_return', 2, 1],
                                 },
-                                price: 1
-                            }
+                                price: 1,
+                            },
                         },
                         {
                             $group: {
-                                _id: "$created_by",
-                                cost: {$sum: "$price"},
-                                avg_cost: {$avg: {$divide: ["$price", "$singles_quantity"]}},
-                                singles_quantity: {$sum: "$singles_quantity"}
-                            }
-                        }
+                                _id: '$created_by',
+                                cost: {$sum: '$price'},
+                                avg_cost: {$avg: {$divide: ['$price', '$singles_quantity']}},
+                                singles_quantity: {$sum: '$singles_quantity'},
+                            },
+                        },
                     ],
                     (err, results) => {
                         if (err) {
@@ -93,24 +93,24 @@ router.get('/', loggedIn, validateDates, (req, res) => {
                 Plane.aggregate(
                     [
                         {
-                            $match: journeyCriteria
+                            $match: journeyCriteria,
                         },
                         {
                             $project: {
                                 singles_quantity: {
-                                    $cond: ["$is_return", 2, 1]
+                                    $cond: ['$is_return', 2, 1],
                                 },
-                                price: 1
-                            }
+                                price: 1,
+                            },
                         },
                         {
                             $group: {
-                                _id: "$created_by",
-                                cost: {$sum: "$price"},
-                                avg_cost: {$avg: {$divide: ["$price", "$singles_quantity"]}},
-                                singles_quantity: {$sum: "$singles_quantity"}
-                            }
-                        }
+                                _id: '$created_by',
+                                cost: {$sum: '$price'},
+                                avg_cost: {$avg: {$divide: ['$price', '$singles_quantity']}},
+                                singles_quantity: {$sum: '$singles_quantity'},
+                            },
+                        },
                     ],
                     (err, results) => {
                         if (err) {
@@ -130,24 +130,24 @@ router.get('/', loggedIn, validateDates, (req, res) => {
                 Train.aggregate(
                     [
                         {
-                            $match: journeyCriteria
+                            $match: journeyCriteria,
                         },
                         {
                             $project: {
                                 singles_quantity: {
-                                    $cond: ["$is_return", 2, 1]
+                                    $cond: ['$is_return', 2, 1],
                                 },
-                                price: 1
-                            }
+                                price: 1,
+                            },
                         },
                         {
                             $group: {
-                                _id: "$created_by",
-                                cost: {$sum: "$price"},
-                                avg_cost: {$avg: {$divide: ["$price", "$singles_quantity"]}},
-                                singles_quantity: {$sum: "$singles_quantity"}
-                            }
-                        }
+                                _id: '$created_by',
+                                cost: {$sum: '$price'},
+                                avg_cost: {$avg: {$divide: ['$price', '$singles_quantity']}},
+                                singles_quantity: {$sum: '$singles_quantity'},
+                            },
+                        },
                     ],
                     (err, results) => {
                         if (err) {
@@ -167,15 +167,15 @@ router.get('/', loggedIn, validateDates, (req, res) => {
                 Hostel.aggregate(
                     [
                         {
-                            $match: hostelCriteria
+                            $match: hostelCriteria,
                         },
                         {
                             $group: {
-                                _id: "$created_by",
-                                cost: {$sum: "$price"},
-                                avg_cost: {$avg: "$price"}
-                            }
-                        }
+                                _id: '$created_by',
+                                cost: {$sum: '$price'},
+                                avg_cost: {$avg: '$price'},
+                            },
+                        },
                     ],
                     (err, results) => {
                         if (err) {
@@ -190,7 +190,7 @@ router.get('/', loggedIn, validateDates, (req, res) => {
                         next(err, results[0]);
                     }
                 );
-            }
+            },
         ],
         (error, data) => {
             res.status(200).json(

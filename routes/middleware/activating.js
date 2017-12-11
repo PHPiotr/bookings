@@ -18,7 +18,7 @@ function activating(req, res, next) {
                     throw err;
                 }
                 if (decoded.purpose !== 'activation') {
-                    throw new Error("Invalid purpose");
+                    throw new Error('Invalid purpose');
                 }
                 if (decoded.sub !== req.param('id')) {
                     throw new Error('Invalid activation code');
@@ -30,7 +30,7 @@ function activating(req, res, next) {
                     if (!user) {
                         return res.status(404).json({
                             success: false,
-                            message: 'User not found'
+                            message: 'User not found',
                         });
                     }
                     if (user.active) {
@@ -54,7 +54,7 @@ function activating(req, res, next) {
     res.io.emit(process.env.EVENT_AUTH_FAILED);
     res.status(403).json({
         success: false,
-        message: 'No token provided.'
+        message: 'No token provided.',
     });
 
 }

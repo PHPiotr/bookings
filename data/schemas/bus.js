@@ -3,65 +3,65 @@ var BusSchema = new Schema({
     booking_number: {
         type: String,
         unique: true,
-        required: true
+        required: true,
     },
     from: {
         type: String,
-        required: true
+        required: true,
     },
     to: {
         type: String,
-        required: true
+        required: true,
     },
     departure_date: {
         type: Date,
-        required: true
+        required: true,
     },
     departure_time: {
         type: String,
-        required: true
+        required: true,
     },
     arrival_time: {
-        type: String
+        type: String,
     },
     seat: {
-        type: String
+        type: String,
     },
     is_return: {
         type: Boolean,
-        default: false
+        default: false,
     },
     return_departure_date: {
-        type: Date
+        type: Date,
     },
     return_departure_time: {
-        type: String
+        type: String,
     },
     return_arrival_time: {
-        type: String
+        type: String,
     },
     return_seat: {
-        type: String
+        type: String,
     },
     price: {
         type: Number,
         get: number => parseFloat(number).toFixed(2),
         set: number => parseFloat(number).toFixed(2),
-        required: true
+        required: true,
     },
     currency: {
         type: String,
         'enum': ['£', 'zł', '€', '$'],
-        default: '£'
+        default: '£',
     },
     checked_in: {
         type: Boolean,
-        default: false
+        default: false,
     },
     created_by: {
         type: Schema.ObjectId,
         ref: 'User',
-        required: true
+        required: true,
     },
     meta: {
         created_at: {
@@ -69,13 +69,13 @@ var BusSchema = new Schema({
             'default': Date.now,
             set: function (val) {
                 return undefined;
-            }
+            },
         },
         updated_at: {
             type: Date,
-            'default': Date.now
-        }
-    }
+            'default': Date.now,
+        },
+    },
 });
 
 module.exports = BusSchema;

@@ -27,7 +27,7 @@ router.get('/', loggedIn, (req, res, next) => {
             match = {
                 $or: [
                     {departure_date: {$gte: newDate}},
-                    {return_departure_date: {$gte: newDate}}
+                    {return_departure_date: {$gte: newDate}},
                 ],
                 created_by: currentUser,
             };
@@ -44,9 +44,9 @@ router.get('/', loggedIn, (req, res, next) => {
                         $or: [
                             {return_departure_date: {$lt: newDate}},
                             {return_departure_date: {$eq: null}},
-                            {return_departure_date: {$eq: ""}}
-                        ]
-                    }
+                            {return_departure_date: {$eq: ''}},
+                        ],
+                    },
                 ],
                 created_by: currentUser,
             };
@@ -78,24 +78,24 @@ router.get('/', loggedIn, (req, res, next) => {
                                 from: 1,
                                 to: 1,
                                 departure_date: {
-                                    "$dateToString": {
-                                        "format": "%Y-%m-%d",
-                                        "date": "$departure_date"
-                                    }
+                                    '$dateToString': {
+                                        'format': '%Y-%m-%d',
+                                        'date': '$departure_date',
+                                    },
                                 },
                                 return_departure_date: {
-                                    $cond: ["$is_return", {
-                                        "$dateToString": {
-                                            "format": "%Y-%m-%d",
-                                            "date": "$return_departure_date"
-                                        }
-                                    }, null]
+                                    $cond: ['$is_return', {
+                                        '$dateToString': {
+                                            'format': '%Y-%m-%d',
+                                            'date': '$return_departure_date',
+                                        },
+                                    }, null],
                                 },
                                 price: 1,
                                 created_by: 1,
-                                is_return: 1
-                            }
-                        }
+                                is_return: 1,
+                            },
+                        },
                     ],
                     function (err, results) {
                         if (err) {
@@ -115,24 +115,24 @@ router.get('/', loggedIn, (req, res, next) => {
                         {
                             $project: {
                                 is_return_journey: {
-                                    $cond: ["$is_return", 1, 0]
+                                    $cond: ['$is_return', 1, 0],
                                 },
                                 singles_quantity: {
-                                    $cond: ["$is_return", 2, 1]
+                                    $cond: ['$is_return', 2, 1],
                                 },
-                                price: 1
-                            }
+                                price: 1,
+                            },
                         },
                         {
                             $group: {
-                                _id: "$created_by",
-                                cost: {$sum: "$price"},
+                                _id: '$created_by',
+                                cost: {$sum: '$price'},
                                 journeys_length: {$sum: 1},
-                                return_journeys_length: {$sum: "$is_return_journey"},
-                                avg_cost: {$avg: {$divide: ["$price", "$singles_quantity"]}},
-                                singles_quantity: {$sum: "$singles_quantity"}
-                            }
-                        }
+                                return_journeys_length: {$sum: '$is_return_journey'},
+                                avg_cost: {$avg: {$divide: ['$price', '$singles_quantity']}},
+                                singles_quantity: {$sum: '$singles_quantity'},
+                            },
+                        },
                     ],
                     function (err, results) {
                         if (err) {
@@ -144,7 +144,7 @@ router.get('/', loggedIn, (req, res, next) => {
                         next(err, results[0]);
                     }
                 );
-            }
+            },
         ],
         (err, results) => {
             if (err) {

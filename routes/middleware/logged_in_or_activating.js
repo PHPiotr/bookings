@@ -4,7 +4,7 @@ const User = require('../../data/models/user');
 module.exports = (req, res, next) => {
 
     const header = req.headers['Authorization'] || req.headers['authorization'];
-    const token = Boolean(header)
+    const token = header
         ? ((header.match(/^Bearer\s+(\S+)$/) || [])[1])
         : (req.params['Authorization'] || req.params['authorization']);
 

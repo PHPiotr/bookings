@@ -12,22 +12,22 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        match: emailRegexp
+        match: emailRegexp,
     },
     active: {
-        type: Boolean
+        type: Boolean,
     },
     meta: {
         created_at: {
             type: Date,
             'default': Date.now,
-            set: val => undefined
+            set: val => undefined,
         },
         updated_at: {
             type: Date,
-            'default': Date.now
-        }
-    }
+            'default': Date.now,
+        },
+    },
 });
 UserSchema
     .virtual('full_name')
@@ -41,7 +41,7 @@ UserSchema
         const nameComponents = fullName.split(' ');
         this.name = {
             last: nameComponents.pop(),
-            first: nameComponents.join(' ')
+            first: nameComponents.join(' '),
         };
     });
 UserSchema.pre('save', function (next) {

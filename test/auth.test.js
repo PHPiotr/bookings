@@ -1,4 +1,3 @@
-const auth = require('../routes/auth');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const app = require('../app');
@@ -39,7 +38,7 @@ describe('Auth', () => {
                 }
                 loginToken = jwt.sign({
                     sub: res.body._id,
-                    purpose: 'login'
+                    purpose: 'login',
                 }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
 
                 chai.request(server)
@@ -59,11 +58,11 @@ describe('Auth', () => {
                 userId = parts[parts.length - 1];
                 loginToken = jwt.sign({
                     sub: userId,
-                    purpose: 'login'
+                    purpose: 'login',
                 }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
                 activationToken = jwt.sign({
                     sub: userId,
-                    purpose: 'activation'
+                    purpose: 'activation',
                 }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
                 chai.request(server)
                     .put(`${process.env.API_PREFIX}/users/${userId}`)
@@ -105,7 +104,7 @@ describe('Auth', () => {
         it('it should fail logging user in when incorrect basic auth', (done) => {
             chai.request(server)
                 .get(`${process.env.API_PREFIX}/auth/login`)
-                .set('Authorization', `Basic incorrect`)
+                .set('Authorization', 'Basic incorrect')
                 .end((err, res) => {
                     res.should.have.status(401);
                     done();

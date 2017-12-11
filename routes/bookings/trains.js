@@ -26,10 +26,10 @@ router.get('/', loggedIn, (req, res, next) => {
             type = 'Current';
             match = {
                 $or: [
-                    {"departure_date": {$gte: newDate}},
-                    {"return_departure_date": {$gte: newDate}}
+                    {'departure_date': {$gte: newDate}},
+                    {'return_departure_date': {$gte: newDate}},
                 ],
-                "created_by": currentUser,
+                'created_by': currentUser,
             };
 
             break;
@@ -39,16 +39,16 @@ router.get('/', loggedIn, (req, res, next) => {
             type = 'Past';
             match = {
                 $and: [
-                    {"departure_date": {$lt: newDate}},
+                    {'departure_date': {$lt: newDate}},
                     {
                         $or: [
-                            {"return_departure_date": {$lt: newDate}},
-                            {"return_departure_date": {$eq: null}},
-                            {"return_departure_date": {$eq: ""}}
-                        ]
-                    }
+                            {'return_departure_date': {$lt: newDate}},
+                            {'return_departure_date': {$eq: null}},
+                            {'return_departure_date': {$eq: ''}},
+                        ],
+                    },
                 ],
-                "created_by": currentUser,
+                'created_by': currentUser,
             };
 
             break;
@@ -69,34 +69,34 @@ router.get('/', loggedIn, (req, res, next) => {
                 Train.aggregate(
                     [
                         {$match: match},
-                        {"$sort": sort},
-                        {"$skip": ((currentPage - 1) * currentLimit)},
-                        {"$limit": currentLimit},
+                        {'$sort': sort},
+                        {'$skip': ((currentPage - 1) * currentLimit)},
+                        {'$limit': currentLimit},
                         {
                             $project: {
-                                "_id": 1,
-                                "from": 1,
-                                "to": 1,
-                                "departure_date": {
-                                    "$dateToString": {
-                                        "format": "%Y-%m-%d",
-                                        "date": "$departure_date"
-                                    }
+                                '_id': 1,
+                                'from': 1,
+                                'to': 1,
+                                'departure_date': {
+                                    '$dateToString': {
+                                        'format': '%Y-%m-%d',
+                                        'date': '$departure_date',
+                                    },
                                 },
-                                "return_departure_date": {
-                                    $cond: ["$is_return", {
-                                        "$dateToString": {
-                                            "format": "%Y-%m-%d",
-                                            "date": "$return_departure_date"
-                                        }
-                                    }, null]
+                                'return_departure_date': {
+                                    $cond: ['$is_return', {
+                                        '$dateToString': {
+                                            'format': '%Y-%m-%d',
+                                            'date': '$return_departure_date',
+                                        },
+                                    }, null],
                                 },
-                                "price": 1,
-                                "created_by": 1,
-                                "currency": 1,
-                                "is_return": 1
-                            }
-                        }
+                                'price': 1,
+                                'created_by': 1,
+                                'currency': 1,
+                                'is_return': 1,
+                            },
+                        },
                     ],
                     (err, results) => {
                         if (err) {
@@ -116,24 +116,24 @@ router.get('/', loggedIn, (req, res, next) => {
                         {
                             $project: {
                                 is_return_journey: {
-                                    $cond: ["$is_return", 1, 0]
+                                    $cond: ['$is_return', 1, 0],
                                 },
                                 singles_quantity: {
-                                    $cond: ["$is_return", 2, 1]
+                                    $cond: ['$is_return', 2, 1],
                                 },
-                                price: 1
-                            }
+                                price: 1,
+                            },
                         },
                         {
                             $group: {
-                                _id: "$created_by",
-                                cost: {$sum: "$price"},
+                                _id: '$created_by',
+                                cost: {$sum: '$price'},
                                 journeys_length: {$sum: 1},
-                                return_journeys_length: {$sum: "$is_return_journey"},
-                                avg_cost: {$avg: {$divide: ["$price", "$singles_quantity"]}},
-                                singles_quantity: {$sum: "$singles_quantity"}
-                            }
-                        }
+                                return_journeys_length: {$sum: '$is_return_journey'},
+                                avg_cost: {$avg: {$divide: ['$price', '$singles_quantity']}},
+                                singles_quantity: {$sum: '$singles_quantity'},
+                            },
+                        },
                     ],
                     (err, results) => {
                         if (err) {
@@ -145,7 +145,7 @@ router.get('/', loggedIn, (req, res, next) => {
                         next(err, results[0]);
                     }
                 );
-            }
+            },
         ],
         (err, results) => {
             if (err) {

@@ -18,4 +18,4 @@ function loadTrain(req, res, next) {
         });
 }
 
-module.exports = loadTrain
+module.exports = loadTrain;
