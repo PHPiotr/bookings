@@ -4,7 +4,6 @@ const loggedIn = require('../middleware/logged_in');
 const loadHostel = require('../middleware/load_hostel');
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 router.get('/', loggedIn, (req, res, next) => {
@@ -16,14 +15,12 @@ router.get('/', loggedIn, (req, res, next) => {
     const newDate = new Date();
     newDate.setHours(0, 0, 0, 0);
 
-    let type;
     let sort;
     let match;
 
     switch (currentType) {
         case 'current':
             sort = {'checkin_date': 1};
-            type = 'Current';
             match = {
                 $or: [
                     {'checkin_date': {$gte: newDate}},
@@ -36,7 +33,6 @@ router.get('/', loggedIn, (req, res, next) => {
 
         case 'past':
             sort = {'checkin_date': -1};
-            type = 'Past';
             match = {
                 $and: [
                     {'checkin_date': {$lt: newDate}},
@@ -49,7 +45,6 @@ router.get('/', loggedIn, (req, res, next) => {
 
         default:
             sort = {'checkin_date': -1};
-            type = 'All';
             match = {created_by: currentUser};
 
             break;
@@ -167,8 +162,7 @@ router.put('/:id', loggedIn, loadHostel, (req, res) => {
     const update = {$set: req.body};
     Hostel.update(query, update, (err) => {
         if (err) {
-            console.error(err);
-            throw new Error(err);
+            throw Error(err);
         }
         res.io.emit('update_hostel');
         res.status(204).send();

@@ -103,6 +103,8 @@ describe('Users', () => {
                 .put(`${process.env.API_PREFIX}/users/${userId}`)
                 .set('Authorization', `Bearer ${activationToken}`)
                 .end((err, res) => {
+                    should.not.exist(err);
+                    should.exist(res);
                     chai.request(server)
                         .put(`${process.env.API_PREFIX}/users/${userId}`)
                         .set('Authorization', `Bearer ${activationToken}`)

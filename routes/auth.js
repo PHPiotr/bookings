@@ -1,4 +1,3 @@
-const async = require('async');
 const User = require('../data/models/user');
 const express = require('express');
 const router = express.Router();

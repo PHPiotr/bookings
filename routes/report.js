@@ -1,5 +1,4 @@
 const async = require('async');
-const mongoose = require('mongoose');
 const loggedIn = require('./middleware/logged_in');
 const validateDates = require('./middleware/validate_dates');
 

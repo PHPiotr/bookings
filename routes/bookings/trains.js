@@ -16,14 +16,12 @@ router.get('/', loggedIn, (req, res, next) => {
     const newDate = new Date();
     newDate.setHours(0, 0, 0, 0);
 
-    let type;
     let sort;
     let match;
 
     switch (currentType) {
         case 'current':
             sort = {'departure_date': 1};
-            type = 'Current';
             match = {
                 $or: [
                     {'departure_date': {$gte: newDate}},
@@ -36,7 +34,6 @@ router.get('/', loggedIn, (req, res, next) => {
 
         case 'past':
             sort = {'departure_date': -1};
-            type = 'Past';
             match = {
                 $and: [
                     {'departure_date': {$lt: newDate}},
@@ -55,7 +52,6 @@ router.get('/', loggedIn, (req, res, next) => {
 
         default:
             sort = {'departure_date': -1};
-            type = 'All';
             match = {created_by: currentUser};
 
             break;
@@ -185,8 +181,7 @@ router.put('/:id', loggedIn, loadTrain, (req, res) => {
     const update = {$set: req.body};
     Train.update(query, update, (err) => {
         if (err) {
-            console.error(err);
-            throw new Error(err);
+            throw Error(err);
         }
         res.io.emit('update_train');
         res.status(204).send();

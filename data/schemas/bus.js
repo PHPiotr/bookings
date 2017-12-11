@@ -67,9 +67,7 @@ var BusSchema = new Schema({
         created_at: {
             type: Date,
             'default': Date.now,
-            set: function (val) {
-                return undefined;
-            },
+            set: () => undefined,
         },
         updated_at: {
             type: Date,
