@@ -53,7 +53,7 @@ router.post('/', (req, res) => {
                 });
             }
 
-            res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/users/${created._id}`);
+            res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/users/${created.username}`);
 
             return res.status(201).send();
         }
