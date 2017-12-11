@@ -17,6 +17,7 @@
     "beforeEach": true,
     "after": true,
     "afterEach": true,
-    "should": true
+    "should": true,
+    "Buffer":true
   }
 }
