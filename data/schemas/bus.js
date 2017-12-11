@@ -1,5 +1,5 @@
-var Schema = require('mongoose').Schema;
-var BusSchema = new Schema({
+const Schema = require('mongoose').Schema;
+const BusSchema = new Schema({
     booking_number: {
         type: String,
         unique: true,
