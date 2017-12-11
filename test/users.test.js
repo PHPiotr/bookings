@@ -35,13 +35,14 @@ describe('Users', () => {
                 if (res.statusCode !== 200) {
                     return done();
                 }
+                const {body} = res;
                 loginToken = jwt.sign({
-                    sub: res.body._id,
+                    sub: body.id,
                     purpose: 'login',
                 }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
 
                 chai.request(server)
-                    .delete(`${process.env.API_PREFIX}/users/${res.body.username}`)
+                    .delete(`${process.env.API_PREFIX}/users/${body.login}`)
                     .set('Authorization', `Bearer ${loginToken}`)
                     .end(() => done());
             });
@@ -52,19 +53,23 @@ describe('Users', () => {
     beforeEach((done) => {
         chai.request(server).post(`${process.env.API_PREFIX}/users`).send(body).end((err, res) => {
             if (res.statusCode === 201) {
-                const location = res.get('Location');
-                const parts = location.split('/');
-                userId = parts[parts.length - 1];
-                loginToken = jwt.sign({
-                    sub: userId,
-                    purpose: 'login',
-                }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
-                activationToken = jwt.sign({
-                    sub: userId,
-                    purpose: 'activation',
-                }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
+                chai.request(server)
+                    .get(`${process.env.API_PREFIX}/users/${username}`)
+                    .end((err, res) => {
+                        userId = res.body.id;
+                        loginToken = jwt.sign({
+                            sub: userId,
+                            purpose: 'login',
+                        }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
+                        activationToken = jwt.sign({
+                            sub: userId,
+                            purpose: 'activation',
+                        }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
+                        done();
+                    });
+            } else {
+                done(err);
             }
-            done();
         });
     });
 

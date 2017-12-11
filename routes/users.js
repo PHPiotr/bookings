@@ -100,7 +100,14 @@ router.get('/:username', loadUser, (req, res, next) => {
                 message: 'User not found',
             });
         }
-        res.status(200).json(user);
+        const {_id, username, active, meta} = user;
+        res.status(200).json({
+            id: _id,
+            login: username,
+            isActive: active,
+            createdAt: meta.created_at,
+            updatedAt: meta.updated_at,
+        });
     });
 });
 
