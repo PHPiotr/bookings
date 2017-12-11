@@ -2,7 +2,21 @@
   "env": {
     "browser": true
   },
+  "extends": "eslint:recommended",
   "parserOptions": {
     "ecmaVersion": 6
+  },
+  "globals": {
+    "process": true,
+    "require": true,
+    "module": true,
+    "it": true,
+    "describe": true,
+    "__dirname": true,
+    "before": true,
+    "beforeEach": true,
+    "after": true,
+    "afterEach": true,
+    "should": true
   }
 }
