@@ -1,4 +1,4 @@
-var mongoose = require('mongoose');
-var FlightSchema = require('../schemas/flight');
-var Flight = mongoose.model('Flight', FlightSchema);
+const mongoose = require('mongoose');
+const FlightSchema = require('../schemas/flight');
+const Flight = mongoose.model('Flight', FlightSchema);
 module.exports = Flight;

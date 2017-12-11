@@ -1,5 +1,4 @@
 const Schema = require('mongoose').Schema;
-
 const FlightSchema = new Schema({
     confirmation_code: {
         type: String,

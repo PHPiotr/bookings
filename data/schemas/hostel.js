@@ -1,6 +1,5 @@
-var Schema = require('mongoose').Schema;
-
-var HostelSchema = new Schema({
+const Schema = require('mongoose').Schema;
+const HostelSchema = new Schema({
     booking_number: {
         type: Number,
         unique: true,
