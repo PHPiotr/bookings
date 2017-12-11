@@ -53,7 +53,7 @@ router.post('/', (req, res) => {
                 });
             }
 
-            res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/users/${created._id}`);
+            res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/users/${created.username}`);
 
             return res.status(201).send();
         }
@@ -100,7 +100,14 @@ router.get('/:username', loadUser, (req, res, next) => {
                 message: 'User not found',
             });
         }
-        res.status(200).json(user);
+        const {_id, username, active, meta} = user;
+        res.status(200).json({
+            id: _id,
+            login: username,
+            isActive: active,
+            createdAt: meta.created_at,
+            updatedAt: meta.updated_at,
+        });
     });
 });
 

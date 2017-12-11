@@ -35,13 +35,14 @@ describe('Users', () => {
                 if (res.statusCode !== 200) {
                     return done();
                 }
+                const {body} = res;
                 loginToken = jwt.sign({
-                    sub: res.body._id,
+                    sub: body.id,
                     purpose: 'login',
                 }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
 
                 chai.request(server)
-                    .delete(`${process.env.API_PREFIX}/users/${res.body.username}`)
+                    .delete(`${process.env.API_PREFIX}/users/${body.login}`)
                     .set('Authorization', `Bearer ${loginToken}`)
                     .end(() => done());
             });
@@ -52,19 +53,23 @@ describe('Users', () => {
     beforeEach((done) => {
         chai.request(server).post(`${process.env.API_PREFIX}/users`).send(body).end((err, res) => {
             if (res.statusCode === 201) {
-                const location = res.get('Location');
-                const parts = location.split('/');
-                userId = parts[parts.length - 1];
-                loginToken = jwt.sign({
-                    sub: userId,
-                    purpose: 'login',
-                }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
-                activationToken = jwt.sign({
-                    sub: userId,
-                    purpose: 'activation',
-                }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
+                chai.request(server)
+                    .get(`${process.env.API_PREFIX}/users/${username}`)
+                    .end((err, res) => {
+                        userId = res.body.id;
+                        loginToken = jwt.sign({
+                            sub: userId,
+                            purpose: 'login',
+                        }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
+                        activationToken = jwt.sign({
+                            sub: userId,
+                            purpose: 'activation',
+                        }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
+                        done();
+                    });
+            } else {
+                done(err);
             }
-            done();
         });
     });
 
@@ -76,6 +81,7 @@ describe('Users', () => {
                 .put(`${process.env.API_PREFIX}/users/${userId}`)
                 .set('Authorization', `Bearer ${activationToken}`)
                 .end((err, res) => {
+                    should.not.exist(err);
                     res.should.have.status(204);
                     done();
                 });
@@ -85,6 +91,7 @@ describe('Users', () => {
                 .put(`${process.env.API_PREFIX}/users/${userId}`)
                 .set('Authorization', 'Bearer malformed.json.webtoken')
                 .end((err, res) => {
+                    should.exist(err);
                     res.should.have.status(403);
                     done();
                 });
@@ -94,6 +101,7 @@ describe('Users', () => {
                 .put(`${process.env.API_PREFIX}/users/${userId}`)
                 .set('Authorization', `Bearer ${loginToken}`)
                 .end((err, res) => {
+                    should.exist(err);
                     res.should.have.status(400);
                     done();
                 });
@@ -109,6 +117,7 @@ describe('Users', () => {
                         .put(`${process.env.API_PREFIX}/users/${userId}`)
                         .set('Authorization', `Bearer ${activationToken}`)
                         .end((err, res) => {
+                            should.exist(err);
                             res.should.have.status(400);
                             done();
                         });
@@ -119,6 +128,7 @@ describe('Users', () => {
                 .put(`${process.env.API_PREFIX}/users/${userId}notexistinguser`)
                 .set('Authorization', `Bearer ${activationToken}`)
                 .end((err, res) => {
+                    should.exist(err);
                     res.should.have.status(400);
                     done();
                 });
@@ -128,6 +138,7 @@ describe('Users', () => {
                 .get(`${process.env.API_PREFIX}/auth/login`)
                 .set('Authorization', `Bearer ${activationToken}`)
                 .end((err, res) => {
+                    should.exist(err);
                     res.should.have.status(401);
                     done();
                 });
@@ -137,6 +148,7 @@ describe('Users', () => {
                 .get(`${process.env.API_PREFIX}/auth/login`)
                 .set('Authorization', `Bearer ${loginToken}`)
                 .end((err, res) => {
+                    should.exist(err);
                     res.should.have.status(401);
                     done();
                 });
