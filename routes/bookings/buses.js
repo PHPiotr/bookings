@@ -4,7 +4,6 @@ const loggedIn = require('../middleware/logged_in');
 const loadBus = require('../middleware/load_bus');
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 router.get('/', loggedIn, (req, res, next) => {
@@ -16,18 +15,16 @@ router.get('/', loggedIn, (req, res, next) => {
     const newDate = new Date();
     newDate.setHours(0, 0, 0, 0);
 
-    let type;
     let sort;
     let match;
 
     switch (currentType) {
         case 'current':
             sort = {departure_date: 1};
-            type = 'Current';
             match = {
                 $or: [
                     {departure_date: {$gte: newDate}},
-                    {return_departure_date: {$gte: newDate}}
+                    {return_departure_date: {$gte: newDate}},
                 ],
                 created_by: currentUser,
             };
@@ -36,7 +33,6 @@ router.get('/', loggedIn, (req, res, next) => {
 
         case 'past':
             sort = {departure_date: -1};
-            type = 'Past';
             match = {
                 $and: [
                     {departure_date: {$lt: newDate}},
@@ -44,9 +40,9 @@ router.get('/', loggedIn, (req, res, next) => {
                         $or: [
                             {return_departure_date: {$lt: newDate}},
                             {return_departure_date: {$eq: null}},
-                            {return_departure_date: {$eq: ""}}
-                        ]
-                    }
+                            {return_departure_date: {$eq: ''}},
+                        ],
+                    },
                 ],
                 created_by: currentUser,
             };
@@ -55,7 +51,6 @@ router.get('/', loggedIn, (req, res, next) => {
 
         default:
             sort = {departure_date: -1};
-            type = 'All';
             match = {created_by: currentUser};
 
             break;
@@ -78,24 +73,24 @@ router.get('/', loggedIn, (req, res, next) => {
                                 from: 1,
                                 to: 1,
                                 departure_date: {
-                                    "$dateToString": {
-                                        "format": "%Y-%m-%d",
-                                        "date": "$departure_date"
-                                    }
+                                    '$dateToString': {
+                                        'format': '%Y-%m-%d',
+                                        'date': '$departure_date',
+                                    },
                                 },
                                 return_departure_date: {
-                                    $cond: ["$is_return", {
-                                        "$dateToString": {
-                                            "format": "%Y-%m-%d",
-                                            "date": "$return_departure_date"
-                                        }
-                                    }, null]
+                                    $cond: ['$is_return', {
+                                        '$dateToString': {
+                                            'format': '%Y-%m-%d',
+                                            'date': '$return_departure_date',
+                                        },
+                                    }, null],
                                 },
                                 price: 1,
                                 created_by: 1,
-                                is_return: 1
-                            }
-                        }
+                                is_return: 1,
+                            },
+                        },
                     ],
                     function (err, results) {
                         if (err) {
@@ -115,24 +110,24 @@ router.get('/', loggedIn, (req, res, next) => {
                         {
                             $project: {
                                 is_return_journey: {
-                                    $cond: ["$is_return", 1, 0]
+                                    $cond: ['$is_return', 1, 0],
                                 },
                                 singles_quantity: {
-                                    $cond: ["$is_return", 2, 1]
+                                    $cond: ['$is_return', 2, 1],
                                 },
-                                price: 1
-                            }
+                                price: 1,
+                            },
                         },
                         {
                             $group: {
-                                _id: "$created_by",
-                                cost: {$sum: "$price"},
+                                _id: '$created_by',
+                                cost: {$sum: '$price'},
                                 journeys_length: {$sum: 1},
-                                return_journeys_length: {$sum: "$is_return_journey"},
-                                avg_cost: {$avg: {$divide: ["$price", "$singles_quantity"]}},
-                                singles_quantity: {$sum: "$singles_quantity"}
-                            }
-                        }
+                                return_journeys_length: {$sum: '$is_return_journey'},
+                                avg_cost: {$avg: {$divide: ['$price', '$singles_quantity']}},
+                                singles_quantity: {$sum: '$singles_quantity'},
+                            },
+                        },
                     ],
                     function (err, results) {
                         if (err) {
@@ -144,7 +139,7 @@ router.get('/', loggedIn, (req, res, next) => {
                         next(err, results[0]);
                     }
                 );
-            }
+            },
         ],
         (err, results) => {
             if (err) {
@@ -183,8 +178,7 @@ router.put('/:id', loggedIn, loadBus, (req, res) => {
     const update = {$set: req.body};
     Bus.update(query, update, (err) => {
         if (err) {
-            console.error(err);
-            throw new Error(err);
+            throw Error(err);
         }
         res.io.emit('update_bus');
         res.status(204).send();

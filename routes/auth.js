@@ -1,4 +1,3 @@
-const async = require('async');
 const User = require('../data/models/user');
 const express = require('express');
 const router = express.Router();
@@ -19,7 +18,7 @@ router.get('/login', (req, res, next) => {
     }
 
     User.findOne({
-        username: username
+        username: username,
     }, (err, user) => {
         if (err) {
             return next(err);
@@ -40,7 +39,7 @@ router.get('/login', (req, res, next) => {
             const expiresIn = process.env.EXPIRES_IN;
             const token = jwt.sign({sub: user._id, purpose: 'login'}, process.env.AUTH_SECRET, {
                 expiresIn: expiresIn,
-                algorithm: 'HS256'
+                algorithm: 'HS256',
             });
             const body = {token: token, expiresIn: expiresIn};
 

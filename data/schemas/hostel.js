@@ -4,52 +4,50 @@ var HostelSchema = new Schema({
     booking_number: {
         type: Number,
         unique: true,
-        required: true
+        required: true,
     },
     hostel_name: {
         type: String,
-        required: true
+        required: true,
     },
     hostel_address: {
-        type: String
+        type: String,
     },
     checkin_date: {
         type: Date,
-        required: true
+        required: true,
     },
     checkout_date: {
         type: Date,
-        required: true
+        required: true,
     },
     price: {
         type: Number,
         get: number => parseFloat(number).toFixed(2),
         set: number => parseFloat(number).toFixed(2),
-        required: true
+        required: true,
     },
     currency: {
         type: String,
         'enum': ['£', 'zł', '€', '$'],
-        default: '£'
+        default: '£',
     },
     created_by: {
         type: Schema.ObjectId,
         ref: 'User',
-        required: true
+        required: true,
     },
     meta: {
         created_at: {
             type: Date,
             'default': Date.now,
-            set: function (val) {
-                return undefined;
-            }
+            set: () => undefined,
         },
         updated_at: {
             type: Date,
-            'default': Date.now
-        }
-    }
+            'default': Date.now,
+        },
+    },
 });
 
 module.exports = HostelSchema;

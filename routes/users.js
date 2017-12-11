@@ -26,7 +26,7 @@ router.post('/', (req, res) => {
                 const activationFromEmail = req.body.activationFromEmail;
                 const token = jwt.sign({
                     sub: created._id,
-                    purpose: 'activation'
+                    purpose: 'activation',
                 }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
 
                 const helper = sendgrid.mail;
@@ -97,7 +97,7 @@ router.get('/:username', loadUser, (req, res, next) => {
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: 'User not found'
+                message: 'User not found',
             });
         }
         res.status(200).json(user);

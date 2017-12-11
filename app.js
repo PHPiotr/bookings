@@ -18,9 +18,9 @@ const io = require('socket.io')(server);
 const api_prefix = process.env.API_PREFIX;
 
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", process.env.CORS_ACCESS_CONTROL_ALLOW_ORIGIN);
-    res.header("Access-Control-Allow-Headers", process.env.CORS_ACCESS_CONTROL_ALLOW_HEADERS);
-    res.header("Access-Control-Allow-Methods", process.env.CORS_ACCESS_CONTROL_ALLOW_METHODS);
+    res.header('Access-Control-Allow-Origin', process.env.CORS_ACCESS_CONTROL_ALLOW_ORIGIN);
+    res.header('Access-Control-Allow-Headers', process.env.CORS_ACCESS_CONTROL_ALLOW_HEADERS);
+    res.header('Access-Control-Allow-Methods', process.env.CORS_ACCESS_CONTROL_ALLOW_METHODS);
     res.io = io;
     next();
 });
@@ -52,7 +52,7 @@ app.use((err, req, res) => {
 });
 
 mongoose.connect(process.env.MONGODB_URI, {
-    useMongoClient: true
+    useMongoClient: true,
 });
 
 module.exports = {app: app, server: server};

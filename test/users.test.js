@@ -1,4 +1,3 @@
-const auth = require('../routes/auth');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const app = require('../app');
@@ -38,7 +37,7 @@ describe('Users', () => {
                 }
                 loginToken = jwt.sign({
                     sub: res.body._id,
-                    purpose: 'login'
+                    purpose: 'login',
                 }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
 
                 chai.request(server)
@@ -58,11 +57,11 @@ describe('Users', () => {
                 userId = parts[parts.length - 1];
                 loginToken = jwt.sign({
                     sub: userId,
-                    purpose: 'login'
+                    purpose: 'login',
                 }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
                 activationToken = jwt.sign({
                     sub: userId,
-                    purpose: 'activation'
+                    purpose: 'activation',
                 }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
             }
             done();
@@ -84,7 +83,7 @@ describe('Users', () => {
         it('it should fail activating user when activation token is malformed', (done) => {
             chai.request(server)
                 .put(`${process.env.API_PREFIX}/users/${userId}`)
-                .set('Authorization', `Bearer malformed.json.webtoken`)
+                .set('Authorization', 'Bearer malformed.json.webtoken')
                 .end((err, res) => {
                     res.should.have.status(403);
                     done();
@@ -104,6 +103,8 @@ describe('Users', () => {
                 .put(`${process.env.API_PREFIX}/users/${userId}`)
                 .set('Authorization', `Bearer ${activationToken}`)
                 .end((err, res) => {
+                    should.not.exist(err);
+                    should.exist(res);
                     chai.request(server)
                         .put(`${process.env.API_PREFIX}/users/${userId}`)
                         .set('Authorization', `Bearer ${activationToken}`)

@@ -4,7 +4,6 @@ const loggedIn = require('../middleware/logged_in');
 const loadHostel = require('../middleware/load_hostel');
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 router.get('/', loggedIn, (req, res, next) => {
@@ -16,40 +15,36 @@ router.get('/', loggedIn, (req, res, next) => {
     const newDate = new Date();
     newDate.setHours(0, 0, 0, 0);
 
-    let type;
     let sort;
     let match;
 
     switch (currentType) {
         case 'current':
             sort = {'checkin_date': 1};
-            type = 'Current';
             match = {
                 $or: [
-                    {"checkin_date": {$gte: newDate}},
-                    {"checkout_date": {$gte: newDate}}
+                    {'checkin_date': {$gte: newDate}},
+                    {'checkout_date': {$gte: newDate}},
                 ],
-                "created_by": currentUser,
+                'created_by': currentUser,
             };
 
             break;
 
         case 'past':
             sort = {'checkin_date': -1};
-            type = 'Past';
             match = {
                 $and: [
-                    {"checkin_date": {$lt: newDate}},
-                    {"checkout_date": {$lt: newDate}}
+                    {'checkin_date': {$lt: newDate}},
+                    {'checkout_date': {$lt: newDate}},
                 ],
-                "created_by": currentUser,
+                'created_by': currentUser,
             };
 
             break;
 
         default:
             sort = {'checkin_date': -1};
-            type = 'All';
             match = {created_by: currentUser};
 
             break;
@@ -63,34 +58,34 @@ router.get('/', loggedIn, (req, res, next) => {
                 Hostel.aggregate(
                     [
                         {$match: match},
-                        {"$sort": sort},
-                        {"$skip": ((currentPage - 1) * currentLimit)},
-                        {"$limit": currentLimit},
+                        {'$sort': sort},
+                        {'$skip': ((currentPage - 1) * currentLimit)},
+                        {'$limit': currentLimit},
                         {
                             $project: {
-                                "_id": 1,
-                                "from": 1,
-                                "to": 1,
-                                "booking_number": 1,
-                                "checkin_date": {
-                                    "$dateToString": {
-                                        "format": "%d/%m/%Y",
-                                        "date": "$checkin_date"
-                                    }
+                                '_id': 1,
+                                'from': 1,
+                                'to': 1,
+                                'booking_number': 1,
+                                'checkin_date': {
+                                    '$dateToString': {
+                                        'format': '%d/%m/%Y',
+                                        'date': '$checkin_date',
+                                    },
                                 },
-                                "checkout_date": {
-                                    "$dateToString": {
-                                        "format": "%d/%m/%Y",
-                                        "date": "$checkout_date"
-                                    }
+                                'checkout_date': {
+                                    '$dateToString': {
+                                        'format': '%d/%m/%Y',
+                                        'date': '$checkout_date',
+                                    },
                                 },
-                                "price": 1,
-                                "hostel_name": 1,
-                                "hostel_address": 1,
-                                "created_by": 1,
-                                "currency": 1
-                            }
-                        }
+                                'price': 1,
+                                'hostel_name': 1,
+                                'hostel_address': 1,
+                                'created_by': 1,
+                                'currency': 1,
+                            },
+                        },
                     ],
                     (err, results) => {
                         if (err) {
@@ -109,15 +104,15 @@ router.get('/', loggedIn, (req, res, next) => {
                         {$match: match},
                         {
                             $project: {
-                                price: 1
-                            }
+                                price: 1,
+                            },
                         },
                         {
                             $group: {
-                                _id: "$created_by",
-                                cost: {$sum: "$price"},
-                            }
-                        }
+                                _id: '$created_by',
+                                cost: {$sum: '$price'},
+                            },
+                        },
                     ],
                     (err, results) => {
                         var cost;
@@ -131,7 +126,7 @@ router.get('/', loggedIn, (req, res, next) => {
                         next(err, cost);
                     }
                 );
-            }
+            },
         ],
         (err, results) => {
             if (err) {
@@ -167,8 +162,7 @@ router.put('/:id', loggedIn, loadHostel, (req, res) => {
     const update = {$set: req.body};
     Hostel.update(query, update, (err) => {
         if (err) {
-            console.error(err);
-            throw new Error(err);
+            throw Error(err);
         }
         res.io.emit('update_hostel');
         res.status(204).send();
