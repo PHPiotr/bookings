@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-router.get('/', (req, res) => res.json({'hello': 'BOOKINGS 4.0'}));
+router.get('/', (req, res) => res.json({'status': 'UP'}));
 
 module.exports = router;

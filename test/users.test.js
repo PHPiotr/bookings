@@ -12,6 +12,7 @@ describe('Users', () => {
 
     const username = '__hello__';
     const password = '__hello__';
+    const basic = new Buffer(username + ':' + password).toString('base64');
     const body = {
         suppressEmail: true,
         registration: {
@@ -151,6 +152,38 @@ describe('Users', () => {
                     should.exist(err);
                     res.should.have.status(401);
                     done();
+                });
+        });
+    });
+
+    describe('Deactivation', () => {
+        it('it should be possible to deactivate own user account', (done) => {
+            chai.request(server)
+                .put(`${process.env.API_PREFIX}/users/${userId}`)
+                .set('Authorization', `Bearer ${activationToken}`)
+                .end((err, res) => {
+                    should.not.exist(err);
+                    res.should.have.status(204);
+                    chai.request(server)
+                        .put(`${process.env.API_PREFIX}/users/${userId}`)
+                        .send({active: false})
+                        .set('Authorization', `Bearer ${loginToken}`)
+                        .end((err, res) => {
+                            should.not.exist(err);
+                            res.should.have.status(204);
+                            chai.request(server)
+                                .get(`${process.env.API_PREFIX}/auth/login`)
+                                .set('Authorization', `Basic ${basic}`)
+                                .end((err, res) => {
+                                    should.exist(err);
+                                    res.should.have.status(403);
+                                    should.exist(res.body);
+                                    res.body.should.be.an('object');
+                                    res.body.should.not.have.property('token');
+                                    res.body.should.not.have.property('expiresIn');
+                                    done();
+                                });
+                        });
                 });
         });
     });
