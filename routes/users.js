@@ -68,25 +68,12 @@ router.post('/', (req, res) => {
 });
 
 router.put('/:id', loggedInOrActivating, (req, res) => {
-    try {
-        if (req.decoded.sub != req.params.id) {
-            throw Error('Invalid token');
+    User.update({_id: new ObjectId(req.params.id)}, {$set: req.decoded.purpose === 'login' ? req.body : {active: true}}, (err) => {
+        if (err) {
+            throw Error(err);
         }
-        if (req.user.active && req.decoded.purpose === 'activation') {
-            throw Error('User already active');
-        }
-        if (!req.user.active && req.decoded.purpose === 'login') {
-            throw Error('User not active');
-        }
-        User.update({_id: new ObjectId(req.params.id)}, {$set: req.decoded.purpose === 'login' ? req.body : {active: true}}, (err) => {
-            if (err) {
-                throw Error(err);
-            }
-            res.status(204).send();
-        });
-    } catch (e) {
-        res.status(400).json({success: false, message: e.message});
-    }
+        res.status(204).send();
+    });
 });
 
 router.get('/:username', loadUser, (req, res, next) => {
