@@ -1,20 +1,25 @@
 const Hostel = require('../../data/models/hostel');
 const ObjectId = require('mongoose').Types.ObjectId;
 
-function loadHostel(req, res, next) {
+module.exports = (req, res, next) => {
     Hostel.findOne({_id: new ObjectId(req.params.id)})
-        .exec(function (err, hostel) {
+        .exec((err, hostel) => {
             if (err) {
                 return next(err);
             }
             if (!hostel) {
-                return res.status(404).send('Not found');
+                return res.status(404).json({
+                    success: false,
+                    message: 'Booking not found',
+                });
             }
             if (req.user._id != hostel.created_by.toString()) {
-                return res.status(403).send(JSON.stringify(['Forbidden']));
+                return res.status(403).json({
+                    success: false,
+                    message: 'Not your booking',
+                });
             }
             req.hostel = hostel;
             next();
         });
-}
-module.exports = loadHostel;
+};
