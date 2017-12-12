@@ -102,7 +102,7 @@ describe('Users', () => {
                 .set('Authorization', `Bearer ${loginToken}`)
                 .end((err, res) => {
                     should.exist(err);
-                    res.should.have.status(400);
+                    res.should.have.status(403);
                     done();
                 });
         });
@@ -129,7 +129,7 @@ describe('Users', () => {
                 .set('Authorization', `Bearer ${activationToken}`)
                 .end((err, res) => {
                     should.exist(err);
-                    res.should.have.status(400);
+                    res.should.have.status(403);
                     done();
                 });
         });
