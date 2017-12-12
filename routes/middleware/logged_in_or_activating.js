@@ -24,7 +24,7 @@ module.exports = (req, res, next) => {
                 if (user.active) {
                     return res.status(400).json({success: false, message: 'User already activated'});
                 }
-                if (decoded.sub !== req.param('id')) {
+                if (decoded.sub !== req.params.id) {
                     return res.status(403).json({success: false, message: 'Invalid activation code'});
                 }
             }
