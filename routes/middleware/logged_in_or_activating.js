@@ -20,6 +20,17 @@ module.exports = (req, res, next) => {
             if (err) {
                 return next(err);
             }
+            if (decoded.purpose === 'activation') {
+                if (user.active) {
+                    return res.status(400).json({success: false, message: 'User already activated'});
+                }
+                if (decoded.sub !== req.params.id) {
+                    return res.status(403).json({success: false, message: 'Invalid activation code'});
+                }
+            }
+            if (decoded.purpose === 'login' && !user.active) {
+                return res.status(403).json({success: false, message: 'User not active'});
+            }
             if (!user) {
                 return res.status(404).json({success: false, message: 'User not found'});
             }
