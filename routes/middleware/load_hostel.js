@@ -19,7 +19,7 @@ module.exports = (req, res, next) => {
                     message: 'Not your booking',
                 });
             }
-            req.hostel = hostel;
+            res.hostel = hostel;
             next();
         });
 };

@@ -8,18 +8,12 @@ module.exports = (req, res, next) => {
                 return next(err);
             }
             if (!bus) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Booking not found',
-                });
+                return res.status(404).json({error: 'Booking not found'});
             }
             if (req.user._id != bus.created_by.toString()) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Not your booking',
-                });
+                return res.status(403).json({error: 'Not your booking'});
             }
-            req.bus = bus;
+            res.bus = bus;
             next();
         });
 };

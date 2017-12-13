@@ -9,12 +9,12 @@ module.exports = (req, res, next) => {
         : (req.params['Authorization'] || req.params['authorization']);
 
     if (!token) {
-        return res.status(403).json({success: false, message: 'No token provided'});
+        return res.status(403).json({error: 'No token provided'});
     }
 
     return jwt.verify(token, process.env.AUTH_SECRET, {algorithms: 'HS256'}, (err, decoded) => {
         if (err) {
-            return res.status(403).json({success: false, message: 'Failed to authenticate token.'});
+            return res.status(403).json({error: 'Failed to authenticate token.'});
         }
         User.findOne({_id: decoded.sub}, (err, user) => {
             if (err) {
@@ -22,17 +22,17 @@ module.exports = (req, res, next) => {
             }
             if (decoded.purpose === 'activation') {
                 if (user.active) {
-                    return res.status(400).json({success: false, message: 'User already activated'});
+                    return res.status(400).json({error: 'User already activated'});
                 }
                 if (decoded.sub !== req.params.id) {
-                    return res.status(403).json({success: false, message: 'Invalid activation code'});
+                    return res.status(403).json({error: 'Invalid activation code'});
                 }
             }
             if (decoded.purpose === 'login' && !user.active) {
-                return res.status(403).json({success: false, message: 'User not active'});
+                return res.status(403).json({error: 'User not active'});
             }
             if (!user) {
-                return res.status(404).json({success: false, message: 'User not found'});
+                return res.status(404).json({error: 'User not found'});
             }
             req.decoded = decoded;
             req.user = user;

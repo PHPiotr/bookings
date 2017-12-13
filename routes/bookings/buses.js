@@ -152,7 +152,7 @@ router.get('/', loggedIn, (req, res, next) => {
             const journeysLength = journeysExist ? results[1].journeys_length : 0;
             const returnJourneysLength = journeysExist ? results[1].return_journeys_length : 0;
 
-            res.send(JSON.stringify({
+            res.json({
                 bookings: journeys,
                 currentPage: currentPage,
                 isFirstPage: currentPage === 1,
@@ -164,17 +164,17 @@ router.get('/', loggedIn, (req, res, next) => {
                 bookingsLength: journeysLength,
                 returnBookingsLength: returnJourneysLength,
                 active: currentType,
-            }));
+            });
         }
     );
 });
 
 router.get('/:id', loggedIn, loadBus, (req, res) => {
-    res.send(JSON.stringify(req.bus));
+    res.json(res.bus);
 });
 
 router.put('/:id', loggedIn, loadBus, (req, res) => {
-    const query = {_id: new ObjectId(req.bus._id)};
+    const query = {_id: new ObjectId(res.bus._id)};
     const update = {$set: req.body};
     Bus.update(query, update, (err) => {
         if (err) {
@@ -185,7 +185,7 @@ router.put('/:id', loggedIn, loadBus, (req, res) => {
 });
 
 router.delete('/:id', loggedIn, loadBus, (req, res) => {
-    Bus.remove({_id: new ObjectId(req.bus._id)}, (err) => {
+    Bus.remove({_id: new ObjectId(res.bus._id)}, (err) => {
         if (err) {
             throw Error(err);
         }
@@ -200,16 +200,12 @@ router.post('/', loggedIn, (req, res, next) => {
     Bus.create(bus, (err) => {
         if (err) {
             if (err.code === 11000) {
-                res.status(409).json({ok: false, err: err});
-            } else {
-                if (err.name === 'ValidationError') {
-                    return res.status(200).json({err: err});
-                } else {
-                    next(err);
-                }
+                return res.status(409).json({error: 'Booking already exists'});
             }
-
-            return;
+            if (err.name === 'ValidationError') {
+                return res.status(403).json({error: 'Booking validation failed'});
+            }
+            return next(err);
         }
         res.status(200).json({ok: true, bus: bus});
     });
