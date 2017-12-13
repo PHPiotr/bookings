@@ -199,7 +199,7 @@ router.delete('/:id', loggedIn, loadTrain, (req, res) => {
 router.post('/', loggedIn, (req, res, next) => {
     var train = req.body;
     train.created_by = req.user._id;
-    Train.create(train, function (err) {
+    Train.create(train, (err, created) => {
         if (err) {
             if (err.code === 11000) {
                 return res.status(409).json({error: 'Booking already exists'});
@@ -209,7 +209,9 @@ router.post('/', loggedIn, (req, res, next) => {
             }
             return next(err);
         }
-        res.status(200).json({ok: true, train: train});
+        res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/bookings/trains/${created._id}`);
+
+        return res.status(201).send();
     });
 });
 

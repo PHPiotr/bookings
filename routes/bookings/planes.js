@@ -237,7 +237,7 @@ router.post('/', loggedIn, (req, res, next) => {
 
     var plane = req.body;
     plane.created_by = req.user._id;
-    Plane.create(plane, (err) => {
+    Plane.create(plane, (err, created) => {
         if (err) {
             if (err.code === 11000) {
                 return res.status(409).json({error: 'Booking already exists'});
@@ -247,7 +247,9 @@ router.post('/', loggedIn, (req, res, next) => {
             }
             return next(err);
         }
-        res.status(200).json({ok: true, plane: plane});
+        res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/bookings/planes/${created._id}`);
+
+        return res.status(201).send();
     });
 });
 

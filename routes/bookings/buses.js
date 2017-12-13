@@ -197,7 +197,7 @@ router.post('/', loggedIn, (req, res, next) => {
 
     var bus = req.body;
     bus.created_by = req.user._id;
-    Bus.create(bus, (err) => {
+    Bus.create(bus, (err, created) => {
         if (err) {
             if (err.code === 11000) {
                 return res.status(409).json({error: 'Booking already exists'});
@@ -207,7 +207,9 @@ router.post('/', loggedIn, (req, res, next) => {
             }
             return next(err);
         }
-        res.status(200).json({ok: true, bus: bus});
+        res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/bookings/buses/${created._id}`);
+
+        return res.status(201).send();
     });
 });
 
