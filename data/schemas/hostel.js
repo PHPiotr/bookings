@@ -1,7 +1,7 @@
 const Schema = require('mongoose').Schema;
 const HostelSchema = new Schema({
     booking_number: {
-        type: Number,
+        type: String,
         unique: true,
         required: true,
     },
