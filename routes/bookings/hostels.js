@@ -179,7 +179,7 @@ router.delete('/:id', loggedIn, loadHostel, (req, res) => {
 
 router.post('/', loggedIn, (req, res, next) => {
 
-    var hostel = req.body;
+    const hostel = req.body;
     hostel.created_by = req.user._id;
     Hostel.create(hostel, (err, created) => {
         if (err) {
