@@ -164,7 +164,6 @@ router.put('/:id', loggedIn, loadHostel, (req, res) => {
         if (err) {
             throw Error(err);
         }
-        res.io.emit('update_hostel');
         res.status(204).send();
     });
 });
@@ -196,7 +195,6 @@ router.post('/', loggedIn, (req, res, next) => {
 
             return;
         }
-        res.io.emit('insert_hostel', hostel);
         res.status(200).send(JSON.stringify({ok: true, hostel: hostel}));
     });
 });

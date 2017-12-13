@@ -183,7 +183,6 @@ router.put('/:id', loggedIn, loadTrain, (req, res) => {
         if (err) {
             throw Error(err);
         }
-        res.io.emit('update_train');
         res.status(204).send();
     });
 });
@@ -214,7 +213,6 @@ router.post('/', loggedIn, (req, res, next) => {
 
             return;
         }
-        res.io.emit('insert_train', train);
         res.status(200).send(JSON.stringify({ok: true, train: train}));
     });
 });

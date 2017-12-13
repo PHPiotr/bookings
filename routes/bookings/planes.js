@@ -220,7 +220,6 @@ router.put('/:id', loggedIn, loadPlane, (req, res) => {
         if (err) {
             throw Error(err);
         }
-        res.io.emit('update_plane');
         res.status(204).send();
     });
 });
@@ -252,7 +251,6 @@ router.post('/', loggedIn, (req, res, next) => {
 
             return;
         }
-        res.io.emit('insert_plane', plane);
         res.status(200).send(JSON.stringify({ok: true, plane: plane}));
     });
 });

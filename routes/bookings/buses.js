@@ -180,7 +180,6 @@ router.put('/:id', loggedIn, loadBus, (req, res) => {
         if (err) {
             throw Error(err);
         }
-        res.io.emit('update_bus');
         res.status(204).send();
     });
 });
@@ -212,7 +211,6 @@ router.post('/', loggedIn, (req, res, next) => {
 
             return;
         }
-        res.io.emit('insert_bus', bus);
         res.status(200).json({ok: true, bus: bus});
     });
 });

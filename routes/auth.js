@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 
 const fail = (res, msg, code) => {
     res.set('WWW-Authenticate', 'Basic realm="Access to bookings"');
-    res.status(code).json({msg: msg});
+    res.status(code).json({success: false, msg: msg});
 };
 
 router.get('/login', (req, res, next) => {
