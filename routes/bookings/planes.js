@@ -192,7 +192,7 @@ router.get('/', loggedIn, (req, res, next) => {
             const journeysLength = journeysExist ? results[1].flights_length : 0;
             const returnJourneysLength = journeysExist ? results[1].return_flights_length : 0;
 
-            res.send(JSON.stringify({
+            res.json({
                 bookings: journeys,
                 currentPage: currentPage,
                 isFirstPage: currentPage === 1,
@@ -204,29 +204,28 @@ router.get('/', loggedIn, (req, res, next) => {
                 bookingsLength: journeysLength,
                 returnBookingsLength: returnJourneysLength,
                 active: currentType,
-            }));
+            });
         }
     );
 });
 
 router.get('/:id', loggedIn, loadPlane, (req, res) => {
-    res.send(JSON.stringify(req.plane));
+    res.json(res.plane);
 });
 
 router.put('/:id', loggedIn, loadPlane, (req, res) => {
-    const query = {_id: new ObjectId(req.plane.id)};
+    const query = {_id: new ObjectId(res.plane.id)};
     const update = {$set: req.body};
     Plane.update(query, update, (err) => {
         if (err) {
             throw Error(err);
         }
-        res.io.emit('update_plane');
         res.status(204).send();
     });
 });
 
 router.delete('/:id', loggedIn, loadPlane, (req, res) => {
-    Plane.remove({_id: new ObjectId(req.plane.id)}, (err) => {
+    Plane.remove({_id: new ObjectId(res.plane.id)}, (err) => {
         if (err) {
             throw Error(err);
         }
@@ -238,22 +237,19 @@ router.post('/', loggedIn, (req, res, next) => {
 
     var plane = req.body;
     plane.created_by = req.user._id;
-    Plane.create(plane, (err) => {
+    Plane.create(plane, (err, created) => {
         if (err) {
             if (err.code === 11000) {
-                res.status(409).send(JSON.stringify({ok: false, err: err}));
-            } else {
-                if (err.name === 'ValidationError') {
-                    return res.status(200).send(JSON.stringify({err: err}));
-                } else {
-                    next(err);
-                }
+                return res.status(409).json({error: 'Booking already exists'});
             }
-
-            return;
+            if (err.name === 'ValidationError') {
+                return res.status(403).json({error: 'Booking validation failed'});
+            }
+            return next(err);
         }
-        res.io.emit('insert_plane', plane);
-        res.status(200).send(JSON.stringify({ok: true, plane: plane}));
+        res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/bookings/planes/${created._id}`);
+
+        return res.status(201).send();
     });
 });
 

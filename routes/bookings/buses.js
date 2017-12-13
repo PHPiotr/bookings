@@ -152,7 +152,7 @@ router.get('/', loggedIn, (req, res, next) => {
             const journeysLength = journeysExist ? results[1].journeys_length : 0;
             const returnJourneysLength = journeysExist ? results[1].return_journeys_length : 0;
 
-            res.send(JSON.stringify({
+            res.json({
                 bookings: journeys,
                 currentPage: currentPage,
                 isFirstPage: currentPage === 1,
@@ -164,29 +164,28 @@ router.get('/', loggedIn, (req, res, next) => {
                 bookingsLength: journeysLength,
                 returnBookingsLength: returnJourneysLength,
                 active: currentType,
-            }));
+            });
         }
     );
 });
 
 router.get('/:id', loggedIn, loadBus, (req, res) => {
-    res.send(JSON.stringify(req.bus));
+    res.json(res.bus);
 });
 
 router.put('/:id', loggedIn, loadBus, (req, res) => {
-    const query = {_id: new ObjectId(req.bus._id)};
+    const query = {_id: new ObjectId(res.bus._id)};
     const update = {$set: req.body};
     Bus.update(query, update, (err) => {
         if (err) {
             throw Error(err);
         }
-        res.io.emit('update_bus');
         res.status(204).send();
     });
 });
 
 router.delete('/:id', loggedIn, loadBus, (req, res) => {
-    Bus.remove({_id: new ObjectId(req.bus._id)}, (err) => {
+    Bus.remove({_id: new ObjectId(res.bus._id)}, (err) => {
         if (err) {
             throw Error(err);
         }
@@ -198,22 +197,19 @@ router.post('/', loggedIn, (req, res, next) => {
 
     var bus = req.body;
     bus.created_by = req.user._id;
-    Bus.create(bus, (err) => {
+    Bus.create(bus, (err, created) => {
         if (err) {
             if (err.code === 11000) {
-                res.status(409).json({ok: false, err: err});
-            } else {
-                if (err.name === 'ValidationError') {
-                    return res.status(200).json({err: err});
-                } else {
-                    next(err);
-                }
+                return res.status(409).json({error: 'Booking already exists'});
             }
-
-            return;
+            if (err.name === 'ValidationError') {
+                return res.status(403).json({error: 'Booking validation failed'});
+            }
+            return next(err);
         }
-        res.io.emit('insert_bus', bus);
-        res.status(200).json({ok: true, bus: bus});
+        res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/bookings/buses/${created._id}`);
+
+        return res.status(201).send();
     });
 });
 

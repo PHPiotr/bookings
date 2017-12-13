@@ -6,10 +6,7 @@ module.exports = (req, res, next) => {
             return next(err);
         }
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found',
-            });
+            return res.status(404).json({error: 'User not found'});
         }
         req.user = user;
         next();

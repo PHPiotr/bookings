@@ -155,7 +155,7 @@ router.get('/', loggedIn, (req, res, next) => {
             const journeysLength = journeysExist ? results[1].journeys_length : 0;
             const returnJourneysLength = journeysExist ? results[1].return_journeys_length : 0;
 
-            res.send(JSON.stringify({
+            res.json({
                 bookings: journeys,
                 currentPage: currentPage,
                 isFirstPage: currentPage === 1,
@@ -167,29 +167,28 @@ router.get('/', loggedIn, (req, res, next) => {
                 bookingsLength: journeysLength,
                 returnBookingsLength: returnJourneysLength,
                 active: currentType,
-            }));
+            });
         }
     );
 });
 
 router.get('/:id', loggedIn, loadTrain, (req, res) => {
-    res.send(JSON.stringify(req.train));
+    res.json(res.train);
 });
 
 router.put('/:id', loggedIn, loadTrain, (req, res) => {
-    const query = {_id: new ObjectId(req.train._id)};
+    const query = {_id: new ObjectId(res.train._id)};
     const update = {$set: req.body};
     Train.update(query, update, (err) => {
         if (err) {
             throw Error(err);
         }
-        res.io.emit('update_train');
         res.status(204).send();
     });
 });
 
 router.delete('/:id', loggedIn, loadTrain, (req, res) => {
-    Train.remove({_id: new ObjectId(req.train._id)}, (err) => {
+    Train.remove({_id: new ObjectId(res.train._id)}, (err) => {
         if (err) {
             throw Error(err);
         }
@@ -200,22 +199,19 @@ router.delete('/:id', loggedIn, loadTrain, (req, res) => {
 router.post('/', loggedIn, (req, res, next) => {
     var train = req.body;
     train.created_by = req.user._id;
-    Train.create(train, function (err) {
+    Train.create(train, (err, created) => {
         if (err) {
             if (err.code === 11000) {
-                res.status(409).send(JSON.stringify({ok: false, err: err}));
-            } else {
-                if (err.name === 'ValidationError') {
-                    return res.status(200).send(JSON.stringify({err: err}));
-                } else {
-                    next(err);
-                }
+                return res.status(409).json({error: 'Booking already exists'});
             }
-
-            return;
+            if (err.name === 'ValidationError') {
+                return res.status(403).json({error: 'Booking validation failed'});
+            }
+            return next(err);
         }
-        res.io.emit('insert_train', train);
-        res.status(200).send(JSON.stringify({ok: true, train: train}));
+        res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/bookings/trains/${created._id}`);
+
+        return res.status(201).send();
     });
 });
 

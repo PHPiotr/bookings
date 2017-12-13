@@ -2,7 +2,13 @@ const Hostel = require('../../data/models/hostel');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 module.exports = (req, res, next) => {
-    Hostel.findOne({_id: new ObjectId(req.params.id)})
+    let id;
+    try {
+        id = new ObjectId(req.params.id);
+    } catch (e) {
+        return res.status(404).json({error: 'Booking not found'});
+    }
+    Hostel.findOne({_id: id})
         .exec((err, hostel) => {
             if (err) {
                 return next(err);
@@ -19,7 +25,7 @@ module.exports = (req, res, next) => {
                     message: 'Not your booking',
                 });
             }
-            req.hostel = hostel;
+            res.hostel = hostel;
             next();
         });
 };

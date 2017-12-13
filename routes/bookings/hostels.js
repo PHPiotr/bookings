@@ -136,7 +136,7 @@ router.get('/', loggedIn, (req, res, next) => {
             const cost = results[1];
             const bookingsLength = bookings.length;
 
-            res.send(JSON.stringify({
+            res.json({
                 bookings: bookings,
                 currentPage: currentPage,
                 isFirstPage: currentPage === 1,
@@ -148,29 +148,28 @@ router.get('/', loggedIn, (req, res, next) => {
                 bookingsLength: bookingsLength,
                 returnBookingsLength: null,
                 active: currentType,
-            }));
+            });
         }
     );
 });
 
 router.get('/:id', loggedIn, loadHostel, (req, res) => {
-    res.send(JSON.stringify(req.hostel));
+    res.json(res.hostel);
 });
 
 router.put('/:id', loggedIn, loadHostel, (req, res) => {
-    const query = {_id: new ObjectId(req.hostel.id)};
+    const query = {_id: new ObjectId(res.hostel.id)};
     const update = {$set: req.body};
     Hostel.update(query, update, (err) => {
         if (err) {
             throw Error(err);
         }
-        res.io.emit('update_hostel');
         res.status(204).send();
     });
 });
 
 router.delete('/:id', loggedIn, loadHostel, (req, res) => {
-    Hostel.remove({_id: new ObjectId(req.hostel.id)}, (err) => {
+    Hostel.remove({_id: new ObjectId(res.hostel.id)}, (err) => {
         if (err) {
             throw Error(err);
         }
@@ -180,24 +179,21 @@ router.delete('/:id', loggedIn, loadHostel, (req, res) => {
 
 router.post('/', loggedIn, (req, res, next) => {
 
-    var hostel = req.body;
+    const hostel = req.body;
     hostel.created_by = req.user._id;
-    Hostel.create(hostel, (err) => {
+    Hostel.create(hostel, (err, created) => {
         if (err) {
             if (err.code === 11000) {
-                res.status(409).send(JSON.stringify({ok: false, err: err}));
-            } else {
-                if (err.name === 'ValidationError') {
-                    return res.status(200).send(JSON.stringify({err: err}));
-                } else {
-                    next(err);
-                }
+                return res.status(409).json({error: 'Booking already exists'});
             }
-
-            return;
+            if (err.name === 'ValidationError') {
+                return res.status(403).json({error: 'Booking validation failed'});
+            }
+            return next(err);
         }
-        res.io.emit('insert_hostel', hostel);
-        res.status(200).send(JSON.stringify({ok: true, hostel: hostel}));
+        res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/bookings/hostels/${created._id}`);
+
+        return res.status(201).send();
     });
 });
 

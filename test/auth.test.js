@@ -56,7 +56,6 @@ describe('Auth', () => {
             if (res.statusCode === 201) {
                 const location = res.get('Location');
                 const parts = location.split('/');
-                userId = parts[parts.length - 1];
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/users/${parts[parts.length - 1]}`)
                     .end((err, res) => {
