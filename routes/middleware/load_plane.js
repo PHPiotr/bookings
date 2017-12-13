@@ -2,7 +2,13 @@ const Plane = require('../../data/models/flight');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 module.exports = (req, res, next) => {
-    Plane.findOne({_id: new ObjectId(req.params.id)})
+    let id;
+    try {
+        id = new ObjectId(req.params.id);
+    } catch (e) {
+        return res.status(404).json({error: 'Booking not found'});
+    }
+    Plane.findOne({_id: id})
         .exec((err, plane) => {
             if (err) {
                 return next(err);
