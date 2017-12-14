@@ -195,15 +195,15 @@ router.delete('/:id', loggedIn, loadBus, (req, res) => {
 
 router.post('/', loggedIn, (req, res, next) => {
 
-    var bus = req.body;
+    const bus = req.body;
     bus.created_by = req.user._id;
     Bus.create(bus, (err, created) => {
         if (err) {
             if (err.code === 11000) {
-                return res.status(409).json({error: 'Booking already exists'});
+                return res.status(409).json({error: `Booking having ${bus.booking_number} number already exists`, errors: {}});
             }
             if (err.name === 'ValidationError') {
-                return res.status(403).json({error: 'Booking validation failed'});
+                return res.status(403).json({error: 'Booking validation failed', errors: err.errors});
             }
             return next(err);
         }
