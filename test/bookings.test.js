@@ -207,6 +207,16 @@ describe('Bookings', () => {
                         done();
                     });
             });
+            it(`it should fail creating ${bookingType} booking when no data submitted`, (done) => {
+                chai.request(server)
+                    .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                    .set('Authorization', `Bearer ${activationToken}`)
+                    .end((err, res) => {
+                        should.exist(err);
+                        res.should.have.status(403);
+                        done();
+                    });
+            });
         });
 
     });
