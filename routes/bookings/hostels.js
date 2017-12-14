@@ -184,10 +184,10 @@ router.post('/', loggedIn, (req, res, next) => {
     Hostel.create(hostel, (err, created) => {
         if (err) {
             if (err.code === 11000) {
-                return res.status(409).json({error: 'Booking already exists'});
+                return res.status(409).json({error: `Booking having ${hostel.booking_number} number already exists`, errors: {}});
             }
             if (err.name === 'ValidationError') {
-                return res.status(403).json({error: 'Booking validation failed'});
+                return res.status(403).json({error: 'Booking validation failed', errors: err.errors});
             }
             return next(err);
         }

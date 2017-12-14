@@ -197,15 +197,16 @@ router.delete('/:id', loggedIn, loadTrain, (req, res) => {
 });
 
 router.post('/', loggedIn, (req, res, next) => {
-    var train = req.body;
+
+    const train = req.body;
     train.created_by = req.user._id;
     Train.create(train, (err, created) => {
         if (err) {
             if (err.code === 11000) {
-                return res.status(409).json({error: 'Booking already exists'});
+                return res.status(409).json({error: `Booking already exists`, errors: {}});
             }
             if (err.name === 'ValidationError') {
-                return res.status(403).json({error: 'Booking validation failed'});
+                return res.status(403).json({error: 'Booking validation failed', errors: err.errors});
             }
             return next(err);
         }

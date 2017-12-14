@@ -235,15 +235,15 @@ router.delete('/:id', loggedIn, loadPlane, (req, res) => {
 
 router.post('/', loggedIn, (req, res, next) => {
 
-    var plane = req.body;
+    const plane = req.body;
     plane.created_by = req.user._id;
     Plane.create(plane, (err, created) => {
         if (err) {
             if (err.code === 11000) {
-                return res.status(409).json({error: 'Booking already exists'});
+                return res.status(409).json({error: `Booking having ${plane.confirmation_code} number already exists`, errors: {}});
             }
             if (err.name === 'ValidationError') {
-                return res.status(403).json({error: 'Booking validation failed'});
+                return res.status(403).json({error: 'Booking validation failed', errors: err.errors});
             }
             return next(err);
         }
