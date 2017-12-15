@@ -16,7 +16,7 @@ module.exports = (req, res, next) => {
             if (!train) {
                 return res.status(404).send({error: 'Booking not found'});
             }
-            if (req.user._id != train.created_by.toString()) {
+            if (res.user._id != train.created_by.toString()) {
                 return res.status(403).json({error: 'Not your booking'});
             }
             res.train = train;

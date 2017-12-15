@@ -68,7 +68,7 @@ router.post('/', (req, res) => {
 });
 
 router.put('/:id', loggedInOrActivating, (req, res) => {
-    User.update({_id: new ObjectId(req.params.id)}, {$set: req.decoded.purpose === 'login' ? req.body : {active: true}}, (err) => {
+    User.update({_id: new ObjectId(req.params.id)}, {$set: res.decoded.purpose === 'login' ? req.body : {active: true}}, (err) => {
         if (err) {
             throw Error(err);
         }

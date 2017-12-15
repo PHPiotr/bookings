@@ -14,7 +14,7 @@ router.get('/', loggedIn, validateDates, (req, res) => {
 
     const {from, to} = req.query;
     const defaultResults = {cost: 0, avg_cost: 0, singles_quantity: '0'};
-    const userId = req.user._id;
+    const userId = res.user._id;
     const criteria = {'created_by': userId};
     let sortType, journeyCriteria, hostelCriteria;
 

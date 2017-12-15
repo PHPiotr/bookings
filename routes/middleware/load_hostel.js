@@ -19,7 +19,7 @@ module.exports = (req, res, next) => {
                     message: 'Booking not found',
                 });
             }
-            if (req.user._id != hostel.created_by.toString()) {
+            if (res.user._id != hostel.created_by.toString()) {
                 return res.status(403).json({
                     success: false,
                     message: 'Not your booking',

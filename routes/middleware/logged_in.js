@@ -3,13 +3,10 @@ const User = require('../../data/models/user');
 
 module.exports = (req, res, next) => {
 
-    let token;
     const header = req.headers['Authorization'] || req.headers['authorization'];
-    if (header) {
-        token = (header.match(/^Bearer\s+(\S+)$/) || [])[1];
-    } else {
-        token = req.params['Authorization'] || req.params['authorization'];
-    }
+    const token = header
+        ? (header.match(/^Bearer\s+(\S+)$/) || [])[1]
+        : req.params['Authorization'] || req.params['authorization'];
 
     if (!token) {
         return res.status(403).json({error: 'No token provided'});
@@ -26,8 +23,8 @@ module.exports = (req, res, next) => {
             if (!user) {
                 return res.status(404).json({error: 'User not found'});
             }
-            req.decoded = decoded;
-            req.user = user;
+            res.decoded = decoded;
+            res.user = user;
 
             return next();
         });
