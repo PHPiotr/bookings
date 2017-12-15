@@ -2,6 +2,8 @@ version: "3"
 services:
   web:
     build: .
+    volumes:
+          - .:/usr/src/app
     ports:
       - "49160:8080"
     links:
