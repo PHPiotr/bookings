@@ -8,7 +8,7 @@ const ObjectId = require('mongoose').Types.ObjectId;
 
 router.get('/', loggedIn, (req, res, next) => {
 
-    const currentUser = req.user._id;
+    const currentUser = res.user._id;
     const currentPage = (req.query.page && parseInt(req.query.page, 10)) || 1;
     const currentType = (req.query.type || '').toLowerCase();
     const currentLimit = (req.query.limit && parseInt(req.query.limit, 10)) || 10;
@@ -196,7 +196,7 @@ router.delete('/:id', loggedIn, loadBus, (req, res) => {
 router.post('/', loggedIn, (req, res, next) => {
 
     const bus = req.body;
-    bus.created_by = req.user._id;
+    bus.created_by = res.user._id;
     Bus.create(bus, (err, created) => {
         if (err) {
             if (err.code === 11000) {

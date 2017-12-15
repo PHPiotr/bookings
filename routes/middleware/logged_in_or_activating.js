@@ -34,8 +34,8 @@ module.exports = (req, res, next) => {
             if (!user) {
                 return res.status(404).json({error: 'User not found'});
             }
-            req.decoded = decoded;
-            req.user = user;
+            res.decoded = decoded;
+            res.user = user;
 
             return next();
         });
