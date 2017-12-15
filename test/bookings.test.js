@@ -217,7 +217,33 @@ describe('Bookings', () => {
                         done();
                     });
             });
-        });
 
+            it(`it should succeed deleting ${bookingType} booking`, (done) => {
+                chai.request(server)
+                    .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                    .send(bookings[bookingType])
+                    .set('Authorization', `Bearer ${loginToken}`)
+                    .end((createErr, createResponse) => {
+
+                        should.not.exist(createErr);
+                        createResponse.should.have.status(201);
+
+                        const location = createResponse.get('Location');
+                        const parts = location.split('/');
+                        const bookingId = parts[parts.length - 1];
+                        bookingsIds[bookingType] = bookingId;
+
+                        chai.request(server)
+                            .delete(`${process.env.API_PREFIX}/bookings/${bookingType}/${bookingId}`)
+                            .set('Authorization', `Bearer ${loginToken}`)
+                            .end((deleteErr, deleteResponse) => {
+                                should.not.exist(deleteErr);
+                                deleteResponse.should.have.status(204);
+                                done();
+                            });
+                    });
+            });
+
+        });
     });
 });
