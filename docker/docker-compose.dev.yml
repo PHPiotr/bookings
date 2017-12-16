@@ -13,6 +13,8 @@ services:
       - mongo
     env_file:
       ../.env
+    environment:
+      - MONGODB_URI=mongodb://mongo/bookings
   mongo:
     image: mongo
     volumes:
