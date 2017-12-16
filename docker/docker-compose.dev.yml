@@ -1,15 +1,20 @@
 version: "3"
 services:
-  web:
-    build: .
+  bookings:
+    image: bookings
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     volumes:
-          - .:/usr/src/app
+          - ../:/usr/src/app
     ports:
       - "49160:8080"
     links:
       - mongo
     env_file:
-      .env
+      ../.env
+    environment:
+      - MONGODB_URI=mongodb://mongo/bookings
   mongo:
     image: mongo
     volumes:

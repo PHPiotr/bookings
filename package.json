@@ -32,7 +32,12 @@
   "scripts": {
     "test": "mocha --exit",
     "lint": "eslint --fix -c .eslintrc.json .",
-    "start": "nf start"
+    "start": "nf start",
+    "docker-dev-build": "docker-compose -f ./docker/docker-compose.dev.yml build",
+    "docker-dev-up": "docker-compose -f ./docker/docker-compose.dev.yml up",
+    "docker-dev-up-d": "docker-compose -f ./docker/docker-compose.dev.yml up -d",
+    "docker-dev-stop": "docker-compose -f ./docker/docker-compose.dev.yml stop",
+    "docker-dev-down": "docker-compose -f ./docker/docker-compose.dev.yml down"
   },
   "repository": {
     "type": "git",
