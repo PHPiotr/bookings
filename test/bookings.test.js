@@ -248,9 +248,19 @@ describe('Bookings', () => {
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end((deleteErr, deleteResponse) => {
-                        should.not.exist(deleteErr);
-                        deleteResponse.should.have.status(200);
+                    .end((err, res) => {
+                        should.not.exist(err);
+                        res.should.have.status(200);
+                        done();
+                    });
+            });
+
+            it(`it should fail listing ${bookingType} bookings when no token`, (done) => {
+                chai.request(server)
+                    .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                    .end((err, res) => {
+                        should.exist(err);
+                        res.should.have.status(403);
                         done();
                     });
             });
