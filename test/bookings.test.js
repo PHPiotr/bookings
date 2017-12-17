@@ -244,6 +244,70 @@ describe('Bookings', () => {
                     });
             });
 
+            it(`it should fail deleting non-existing ${bookingType} booking`, (done) => {
+                chai.request(server)
+                    .delete(`${process.env.API_PREFIX}/bookings/${bookingType}/__non_existing_id__`)
+                    .set('Authorization', `Bearer ${loginToken}`)
+                    .end((err, res) => {
+                        should.exist(err);
+                        res.should.have.status(404);
+                        done();
+                    });
+            });
+
+            it(`it should fail deleting ${bookingType} booking when no token`, (done) => {
+                chai.request(server)
+                    .delete(`${process.env.API_PREFIX}/bookings/${bookingType}/__whatever_id__`)
+                    .end((err, res) => {
+                        should.exist(err);
+                        res.should.have.status(403);
+                        done();
+                    });
+            });
+
+            it(`it should succeed listing ${bookingType} bookings`, (done) => {
+                chai.request(server)
+                    .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                    .set('Authorization', `Bearer ${loginToken}`)
+                    .end((err, res) => {
+                        should.not.exist(err);
+                        res.should.have.status(200);
+                        done();
+                    });
+            });
+
+            it(`it should fail listing ${bookingType} bookings when no token`, (done) => {
+                chai.request(server)
+                    .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                    .end((err, res) => {
+                        should.exist(err);
+                        res.should.have.status(403);
+                        done();
+                    });
+            });
+
+            it(`it should fail listing ${bookingType} bookings with activation token`, (done) => {
+                chai.request(server)
+                    .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                    .set('Authorization', `Bearer ${activationToken}`)
+                    .end((err, res) => {
+                        should.exist(err);
+                        res.should.have.status(403);
+                        done();
+                    });
+            });
+
+            it(`it should fail listing ${bookingType} bookings with malformed token`, (done) => {
+                chai.request(server)
+                    .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                    .set('Authorization', `Bearer j.w.t`)
+                    .end((err, res) => {
+                        should.exist(err);
+                        res.should.have.status(403);
+                        done();
+                    });
+            });
+
         });
     });
 });
