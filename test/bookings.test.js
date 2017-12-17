@@ -276,6 +276,17 @@ describe('Bookings', () => {
                     });
             });
 
+            it(`it should fail listing ${bookingType} bookings with malformed token`, (done) => {
+                chai.request(server)
+                    .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                    .set('Authorization', `Bearer j.w.t`)
+                    .end((err, res) => {
+                        should.exist(err);
+                        res.should.have.status(403);
+                        done();
+                    });
+            });
+
         });
     });
 });
