@@ -244,6 +244,17 @@ describe('Bookings', () => {
                     });
             });
 
+            it(`it should succeed listing ${bookingType} bookings`, (done) => {
+                chai.request(server)
+                    .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                    .set('Authorization', `Bearer ${loginToken}`)
+                    .end((deleteErr, deleteResponse) => {
+                        should.not.exist(deleteErr);
+                        deleteResponse.should.have.status(200);
+                        done();
+                    });
+            });
+
         });
     });
 });
