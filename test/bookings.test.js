@@ -265,6 +265,17 @@ describe('Bookings', () => {
                     });
             });
 
+            it(`it should fail listing ${bookingType} bookings with activation token`, (done) => {
+                chai.request(server)
+                    .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                    .set('Authorization', `Bearer ${activationToken}`)
+                    .end((err, res) => {
+                        should.exist(err);
+                        res.should.have.status(403);
+                        done();
+                    });
+            });
+
         });
     });
 });
