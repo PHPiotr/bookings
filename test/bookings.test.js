@@ -244,6 +244,17 @@ describe('Bookings', () => {
                     });
             });
 
+            it(`it should fail deleting non-existing ${bookingType} bookings`, (done) => {
+                chai.request(server)
+                    .delete(`${process.env.API_PREFIX}/bookings/${bookingType}/__non_existing_id__`)
+                    .set('Authorization', `Bearer ${loginToken}`)
+                    .end((err, res) => {
+                        should.exist(err);
+                        res.should.have.status(404);
+                        done();
+                    });
+            });
+
             it(`it should succeed listing ${bookingType} bookings`, (done) => {
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
