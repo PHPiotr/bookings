@@ -172,7 +172,7 @@ describe('Bookings', () => {
     bookingTypes.forEach((bookingType) => {
 
         describe(bookingType, () => {
-            it(`it should succeed creating ${bookingType} booking`, (done) => {
+            it(`it should succeed creating and viewing ${bookingType} booking`, (done) => {
                 chai.request(server)
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .send(bookings[bookingType])
@@ -182,8 +182,16 @@ describe('Bookings', () => {
                         res.should.have.status(201);
                         const location = res.get('Location');
                         const parts = location.split('/');
-                        bookingsIds[bookingType] = parts[parts.length - 1];
-                        done();
+                        const bookingId = parts[parts.length - 1];
+                        bookingsIds[bookingType] = bookingId;
+                        chai.request(server)
+                            .get(`${process.env.API_PREFIX}/bookings/${bookingType}/${bookingId}`)
+                            .set('Authorization', `Bearer ${loginToken}`)
+                            .end((viewErr, viewRes) => {
+                                should.not.exist(viewErr);
+                                viewRes.should.have.status(200);
+                                done();
+                            });
                     });
             });
             it(`it should fail creating ${bookingType} booking when no login token sent`, (done) => {
