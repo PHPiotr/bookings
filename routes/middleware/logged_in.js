@@ -16,6 +16,9 @@ module.exports = (req, res, next) => {
         if (err || decoded.purpose !== 'login') {
             return res.status(403).json({error: 'Failed to authenticate token'});
         }
+        if (decoded.iat + process.env.EXPIRES_IN > decoded.exp) {
+            return res.status(403).json({error: 'Token expired'});
+        }
         User.findOne({_id: decoded.sub}, (err, user) => {
             if (err) {
                 return next(err);
