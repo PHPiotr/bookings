@@ -6,6 +6,7 @@ module.exports = (req, res, next) => {
     try {
         id = new ObjectId(req.params.id);
     } catch (e) {
+        res.statusMessage = 'Booking not found';
         return res.status(404).json({error: 'Booking not found'});
     }
     Bus.findOne({_id: id})
@@ -14,6 +15,7 @@ module.exports = (req, res, next) => {
                 return next(err);
             }
             if (!bus) {
+                res.statusMessage = 'Booking not found';
                 return res.status(404).json({error: 'Booking not found'});
             }
             if (res.user._id != bus.created_by.toString()) {

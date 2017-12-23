@@ -6,6 +6,7 @@ module.exports = (req, res, next) => {
     try {
         id = new ObjectId(req.params.id);
     } catch (e) {
+        res.statusMessage = 'Booking not found';
         return res.status(404).json({error: 'Booking not found'});
     }
     Train.findOne({_id: id})
@@ -14,7 +15,8 @@ module.exports = (req, res, next) => {
                 return next(err);
             }
             if (!train) {
-                return res.status(404).send({error: 'Booking not found'});
+                res.statusMessage = 'Booking not found';
+                return res.status(404).json({error: 'Booking not found'});
             }
             if (res.user._id != train.created_by.toString()) {
                 return res.status(403).json({error: 'Not your booking'});
