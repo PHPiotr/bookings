@@ -24,6 +24,7 @@ module.exports = (req, res, next) => {
                 return next(err);
             }
             if (!user) {
+                res.statusMessage = 'User not found';
                 return res.status(404).json({error: 'User not found'});
             }
             res.decoded = decoded;

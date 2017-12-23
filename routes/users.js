@@ -82,6 +82,7 @@ router.get('/:username', loadUser, (req, res, next) => {
             return next(err);
         }
         if (!user) {
+            res.statusMessage = 'User not found';
             return res.status(404).json({
                 success: false,
                 message: 'User not found',
