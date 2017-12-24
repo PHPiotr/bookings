@@ -251,7 +251,6 @@ describe('Bookings', () => {
                             });
                     });
             });
-
             it(`it should fail deleting non-existing ${bookingType} booking`, (done) => {
                 chai.request(server)
                     .delete(`${process.env.API_PREFIX}/bookings/${bookingType}/__non_existing_id__`)
@@ -262,7 +261,6 @@ describe('Bookings', () => {
                         done();
                     });
             });
-
             it(`it should fail deleting ${bookingType} booking when no token`, (done) => {
                 chai.request(server)
                     .delete(`${process.env.API_PREFIX}/bookings/${bookingType}/__whatever_id__`)
@@ -283,7 +281,16 @@ describe('Bookings', () => {
                         done();
                     });
             });
-
+            it(`it should fail listing ${bookingType} bookings of unsupported type`, (done) => {
+                chai.request(server)
+                    .get(`${process.env.API_PREFIX}/bookings/${bookingType}/?type=unsupported`)
+                    .set('Authorization', `Bearer ${loginToken}`)
+                    .end((err, res) => {
+                        should.exist(err);
+                        res.should.have.status(400);
+                        done();
+                    });
+            });
             it(`it should fail listing ${bookingType} bookings when no token`, (done) => {
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
@@ -293,7 +300,6 @@ describe('Bookings', () => {
                         done();
                     });
             });
-
             it(`it should fail listing ${bookingType} bookings with activation token`, (done) => {
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
@@ -304,7 +310,6 @@ describe('Bookings', () => {
                         done();
                     });
             });
-
             it(`it should fail listing ${bookingType} bookings with malformed token`, (done) => {
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)

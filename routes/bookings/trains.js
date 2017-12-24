@@ -11,7 +11,7 @@ router.get('/', loggedIn, (req, res, next) => {
 
     const currentUser = res.user._id;
     const currentPage = (req.query.page && parseInt(req.query.page, 10)) || 1;
-    const currentType = (req.query.type || '').toLowerCase();
+    const currentType = (req.query.type || '').trim().toLowerCase();
     const currentLimit = (req.query.limit && parseInt(req.query.limit, 10)) || 10;
     const newDate = new Date();
     newDate.setHours(0, 0, 0, 0);
@@ -51,6 +51,12 @@ router.get('/', loggedIn, (req, res, next) => {
             break;
 
         default:
+            if (currentType) {
+                const error = 'Unsupported booking type';
+                res.statusText = error;
+
+                return res.status(400).json({error});
+            }
             sort = {'departure_date': -1};
             match = {created_by: currentUser};
 
