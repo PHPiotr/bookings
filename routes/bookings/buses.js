@@ -52,7 +52,7 @@ router.get('/', loggedIn, (req, res, next) => {
         default:
             if (currentType) {
                 const error = 'Unsupported booking type';
-                res.statusText = error;
+                res.statusMessage = error;
 
                 return res.status(400).json({error});
             }
