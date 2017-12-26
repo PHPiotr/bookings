@@ -48,4 +48,8 @@ router.get('/login', (req, res, next) => {
     });
 });
 
+router.post('/account-recovery', (req, res) => {
+    res.status(201).send();
+});
+
 module.exports = router;

@@ -76,6 +76,10 @@ router.put('/:id', loggedInOrActivating, (req, res) => {
     });
 });
 
+router.put('/password-reset', (req, res) => {
+    res.status(204).send();
+});
+
 router.get('/:username', loadUser, (req, res, next) => {
     User.findOne({username: req.params.username}, (err, user) => {
         if (err) {
