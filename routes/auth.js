@@ -80,7 +80,7 @@ router.post('/account-recovery', (req, res) => {
         const token = jwt.sign({
             sub: user._id,
             purpose: 'password-reset',
-        }, `${process.env.AUTH_SECRET}${user.email}${user.password}`, {algorithm: 'HS256'});
+        }, `${process.env.AUTH_SECRET}${user.password}`, {algorithm: 'HS256'});
 
         const recoveryFromEmail = req.body.recoveryFromEmail && req.body.recoveryFromEmail.toString().trim();
         const appName = req.body.appName && req.body.appName.toString().trim();
