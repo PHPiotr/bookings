@@ -7,6 +7,7 @@ const router = express.Router();
 const ObjectId = require('mongoose').Types.ObjectId;
 const jwt = require('jsonwebtoken');
 const sendgrid = require('sendgrid');
+const bcrypt = require('bcrypt-nodejs');
 
 router.post('/', (req, res) => {
     const user = req.body.registration;
@@ -76,8 +77,66 @@ router.put('/:id', loggedInOrActivating, (req, res) => {
     });
 });
 
-router.put('/password-reset', (req, res) => {
-    res.status(204).send();
+router.patch('/:id', (req, res) => {
+
+    const header = req.headers['Authorization'] || req.headers['authorization'];
+    const token = header
+        ? ((header.match(/^Bearer\s+(\S+)$/) || [])[1])
+        : (req.params['Authorization'] || req.params['authorization']);
+
+    if (!token) {
+        throw Error('No token provided');
+    }
+
+    const {newPassword, newPasswordRepeat} = req.body;
+    if (newPassword !== newPasswordRepeat) {
+        const message = 'Passwords did not match';
+        res.statusMessage = message;
+        return res.status(403).json({message});
+    }
+    if (typeof newPassword !== 'string') {
+        const message = 'New password must be a string';
+        res.statusMessage = message;
+        return res.status(403).json({message});
+    }
+    if (!newPassword.trim()) {
+        const message = 'Please provide new password';
+        res.statusMessage = message;
+        return res.status(403).json({message});
+    }
+
+    User.findOne({_id: req.params.id}, (err, user) => {
+        if (err) {
+            throw err;
+        }
+        if (!user) {
+            throw err;
+        }
+        jwt.verify(token, `${process.env.AUTH_SECRET}${user.password}`, {algorithms: 'HS256'}, (err, decoded) => {
+            if (err) {
+                throw err;
+            }
+            // TODO: No exp claim available...
+            if (Math.floor(Date.now() / 1000) > decoded.exp) {
+                throw Error('Token expired');
+            }
+            if (decoded.purpose !== 'password-reset') {
+                throw Error('Wrong token purpose');
+            }
+
+            bcrypt.hash(newPassword, null, null, (err, hash) => {
+                if (err) {
+                    throw err;
+                }
+                User.update({_id: new ObjectId(req.params.id)}, {$set: {password: hash}}, (err) => {
+                    if (err) {
+                        throw err;
+                    }
+                    res.status(204).send();
+                });
+            });
+        });
+    });
 });
 
 router.get('/:username', loadUser, (req, res, next) => {
