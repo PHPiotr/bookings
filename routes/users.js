@@ -7,6 +7,7 @@ const router = express.Router();
 const ObjectId = require('mongoose').Types.ObjectId;
 const jwt = require('jsonwebtoken');
 const sendgrid = require('sendgrid');
+const bcrypt = require('bcrypt-nodejs');
 
 router.post('/', (req, res) => {
     const user = req.body.registration;
@@ -73,6 +74,82 @@ router.put('/:id', loggedInOrActivating, (req, res) => {
             throw Error(err);
         }
         res.status(204).send();
+    });
+});
+
+router.patch('/:id', (req, res) => {
+
+    const header = req.headers['Authorization'] || req.headers['authorization'];
+    const token = header
+        ? ((header.match(/^Bearer\s+(\S+)$/) || [])[1])
+        : (req.params['Authorization'] || req.params['authorization']);
+
+    if (!token) {
+        throw Error('No token provided');
+    }
+
+    const {newPassword, newPasswordRepeat} = req.body;
+    if (newPassword !== newPasswordRepeat) {
+        const message = 'Passwords did not match';
+        res.statusMessage = message;
+        return res.status(403).json({message});
+    }
+    if (typeof newPassword !== 'string') {
+        const message = 'New password must be a string';
+        res.statusMessage = message;
+        return res.status(403).json({message});
+    }
+    if (!newPassword.trim()) {
+        const message = 'Please provide new password';
+        res.statusMessage = message;
+        return res.status(403).json({message});
+    }
+
+    User.findOne({_id: req.params.id}, (err, user) => {
+        if (err) {
+            const message = `${err.name}: ${err.message}`;
+            res.statusMessage = message;
+            return res.status(400).json({message});
+        }
+        if (!user) {
+            const message = 'No such user';
+            res.statusMessage = message;
+            return res.status(404).json({message});
+        }
+        jwt.verify(token, `${process.env.AUTH_SECRET}${user.password}`, {algorithms: 'HS256'}, (err, decoded) => {
+            if (err) {
+                const message = `${err.name}: ${err.message}`;
+                res.statusMessage = message;
+                return res.status(403).json({message});
+            }
+            // TODO: No exp claim available...
+            if (Math.floor(Date.now() / 1000) > decoded.exp) {
+                const message = 'Expired token';
+                res.statusMessage = message;
+                return res.status(403).json({message});
+            }
+            if (decoded.purpose !== 'password-reset') {
+                const message = 'Invalid token purpose';
+                res.statusMessage = message;
+                return res.status(403).json({message});
+            }
+
+            bcrypt.hash(newPassword, null, null, (err, hash) => {
+                if (err) {
+                    const message = `${err.name}: ${err.message}`;
+                    res.statusMessage = message;
+                    return res.status(403).json({message});
+                }
+                User.update({_id: new ObjectId(req.params.id)}, {$set: {password: hash}}, (err) => {
+                    if (err) {
+                        const message = `${err.name}: ${err.message}`;
+                        res.statusMessage = message;
+                        return res.status(403).json({message});
+                    }
+                    res.status(204).send();
+                });
+            });
+        });
     });
 });
 
