@@ -77,7 +77,7 @@ router.put('/:id', loggedInOrActivating, (req, res) => {
     });
 });
 
-router.patch('/:id', (req, res) => {
+router.patch('/:id', (req, res, next) => {
 
     const header = req.headers['Authorization'] || req.headers['authorization'];
     const token = header
@@ -85,66 +85,46 @@ router.patch('/:id', (req, res) => {
         : (req.params['Authorization'] || req.params['authorization']);
 
     if (!token) {
-        throw Error('No token provided');
+        return next({message: 'No token provided', code: 403});
     }
 
     const {newPassword, newPasswordRepeat} = req.body;
     if (newPassword !== newPasswordRepeat) {
-        const message = 'Passwords did not match';
-        res.statusMessage = message;
-        return res.status(403).json({message});
+        return next({message: 'Passwords did not match', code: 403});
     }
     if (typeof newPassword !== 'string') {
-        const message = 'New password must be a string';
-        res.statusMessage = message;
-        return res.status(403).json({message});
+        return next({message: 'Password must be a string', code: 403});
     }
     if (!newPassword.trim()) {
-        const message = 'Please provide new password';
-        res.statusMessage = message;
-        return res.status(403).json({message});
+        return next({message: 'Password not provided', code: 403});
     }
 
     User.findOne({_id: req.params.id}, (err, user) => {
         if (err) {
-            const message = `${err.name}: ${err.message}`;
-            res.statusMessage = message;
-            return res.status(400).json({message});
+            return next({message: `${err.name}: ${err.message}`, code: 403});
         }
         if (!user) {
-            const message = 'No such user';
-            res.statusMessage = message;
-            return res.status(404).json({message});
+            return next({message: 'No such user', code: 404});
         }
         jwt.verify(token, `${process.env.AUTH_SECRET}${user.password}`, {algorithms: 'HS256'}, (err, decoded) => {
             if (err) {
-                const message = `${err.name}: ${err.message}`;
-                res.statusMessage = message;
-                return res.status(403).json({message});
+                return next({message: `${err.name}: ${err.message}`, code: 403});
             }
             // TODO: No exp claim available...
             if (Math.floor(Date.now() / 1000) > decoded.exp) {
-                const message = 'Expired token';
-                res.statusMessage = message;
-                return res.status(403).json({message});
+                return next({message: 'Expired token', code: 403});
             }
             if (decoded.purpose !== 'password-reset') {
-                const message = 'Invalid token purpose';
-                res.statusMessage = message;
-                return res.status(403).json({message});
+                return next({message: 'Invalid token purpose', code: 403});
             }
 
             bcrypt.hash(newPassword, null, null, (err, hash) => {
                 if (err) {
-                    const message = `${err.name}: ${err.message}`;
-                    res.statusMessage = message;
-                    return res.status(403).json({message});
+                    return next({message: `${err.name}: ${err.message}`, code: 403});
                 }
                 User.update({_id: new ObjectId(req.params.id)}, {$set: {password: hash}}, (err) => {
                     if (err) {
-                        const message = `${err.name}: ${err.message}`;
-                        res.statusMessage = message;
-                        return res.status(403).json({message});
+                        return next({message: `${err.name}: ${err.message}`, code: 403});
                     }
                     res.status(204).send();
                 });
