@@ -101,5 +101,15 @@ describe('Account recovery', () => {
                     done();
                 });
         });
+        it('it should fail initiating account recovery when email malformed', (done) => {
+            chai.request(server)
+                .post(`${process.env.API_PREFIX}/auth/account-recovery`)
+                .send({email: 'malformed'})
+                .end((err, res) => {
+                    should.exist(err);
+                    res.should.have.status(403);
+                    done();
+                });
+        });
     });
 });
