@@ -13,13 +13,14 @@ describe('Account recovery', () => {
 
     const username = '__hello__';
     const password = '__hello__';
+    const email = 'hello@example.com';
     //const basic = new Buffer(username + ':' + password).toString('base64');
     const body = {
         suppressEmail: true,
         registration: {
             username,
             password,
-            email: 'hello@example.com',
+            email,
             repeatPassword: password,
         },
     };
@@ -108,6 +109,40 @@ describe('Account recovery', () => {
                 .end((err, res) => {
                     should.exist(err);
                     res.should.have.status(403);
+                    done();
+                });
+        });
+        it('it should not fail initiating account if email does not exist in the system', (done) => {
+            chai.request(server)
+                .post(`${process.env.API_PREFIX}/auth/account-recovery`)
+                .send({email: 'does-not-exist@example.com'})
+                .end((err, res) => {
+                    should.not.exist(err);
+                    res.should.have.status(201);
+                    done();
+                });
+        });
+        it('it should fail initiating account if email exists but recovery url missing', (done) => {
+            chai.request(server)
+                .post(`${process.env.API_PREFIX}/auth/account-recovery`)
+                .send({email: 'hello@example.com'})
+                .end((err, res) => {
+                    should.exist(err);
+                    res.should.have.status(403);
+                    done();
+                });
+        });
+        it('it should succeed initiating account if email exists and recovery url is not missing', (done) => {
+            chai.request(server)
+                .post(`${process.env.API_PREFIX}/auth/account-recovery`)
+                .send({
+                    email: 'hello@example.com',
+                    recoveryUrl: 'http://example.com',
+                    suppressEmail: true, // TODO: Find a way to mock sending emails properly
+                })
+                .end((err, res) => {
+                    should.not.exist(err);
+                    res.should.have.status(201);
                     done();
                 });
         });

@@ -100,11 +100,12 @@ router.post('/account-recovery', (req, res, next) => {
 
         sg.API(request, (err) => {
             if (err) {
-                return res.handleError(err.message, 403, next);
+                if (!req.body.suppressEmail) {
+                    return res.handleError(err.message, 403, next);
+                }
             }
+            return res.status(201).send();
         });
-
-        return res.status(201).send();
     });
 });
 
