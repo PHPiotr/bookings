@@ -50,16 +50,16 @@ router.get('/login', (req, res, next) => {
 });
 
 router.post('/account-recovery', (req, res, next) => {
-    const recoveryEmail = req.body.email.toString().trim();
+    const recoveryEmail = req.body && req.body.email && req.body.email.toString().trim();
     if (!recoveryEmail) {
-        return next({message: 'Email address not provided', code: 403});
+        return res.handleError('Email address not provided', 403, next);
     }
     if (!recoveryEmail.match(/.+@.+\..+/)) {
-        return next({message: 'Email address not valid', code: 403});
+        return res.handleError('Email address not valid', 403, next);
     }
     User.findOne({email: recoveryEmail}, (err, user) => {
         if (err) {
-            return next({message: `${err.name}: ${err.message}`, code: 403});
+            return res.handleError(`${err.name}: ${err.message}`, 403, next);
         }
         if (!user) {
             // Do not allow checking if email exists or not
@@ -69,7 +69,7 @@ router.post('/account-recovery', (req, res, next) => {
         const recoveryUrl = req.body.recoveryUrl && req.body.recoveryUrl.toString().trim();
 
         if (!recoveryUrl) {
-            return next({message: 'Recovery url missing', code: 403});
+            return res.handleError('Recovery url missing', 403, next);
         }
 
         // Single-Use JWT
@@ -100,7 +100,7 @@ router.post('/account-recovery', (req, res, next) => {
 
         sg.API(request, (err) => {
             if (err) {
-                return next({message: err.message, code: 403});
+                return res.handleError(err.message, 403, next);
             }
         });
 

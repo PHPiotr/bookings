@@ -85,46 +85,46 @@ router.patch('/:id', (req, res, next) => {
         : (req.params['Authorization'] || req.params['authorization']);
 
     if (!token) {
-        return next({message: 'No token provided', code: 403});
+        return res.handleError('No token provided', 403, next);
     }
 
     const {newPassword, newPasswordRepeat} = req.body;
     if (newPassword !== newPasswordRepeat) {
-        return next({message: 'Passwords did not match', code: 403});
+        return res.handleError('Passwords did not match', 403, next);
     }
     if (typeof newPassword !== 'string') {
-        return next({message: 'Password must be a string', code: 403});
+        return res.handleError('Password must be a string', 403, next);
     }
     if (!newPassword.trim()) {
-        return next({message: 'Password not provided', code: 403});
+        return res.handleError('Password not provided', 403, next);
     }
 
     User.findOne({_id: req.params.id}, (err, user) => {
         if (err) {
-            return next({message: `${err.name}: ${err.message}`, code: 403});
+            return res.handleError(`${err.name}: ${err.message}`, 403, next);
         }
         if (!user) {
-            return next({message: 'No such user', code: 404});
+            return res.handleError('No such user', 404, next);
         }
         jwt.verify(token, `${process.env.AUTH_SECRET}${user.password}`, {algorithms: 'HS256'}, (err, decoded) => {
             if (err) {
-                return next({message: `${err.name}: ${err.message}`, code: 403});
+                return res.handleError(`${err.name}: ${err.message}`, 403, next);
             }
             // TODO: No exp claim available...
             if (Math.floor(Date.now() / 1000) > decoded.exp) {
-                return next({message: 'Expired token', code: 403});
+                return res.handleError('Expired token', 403, next);
             }
             if (decoded.purpose !== 'password-reset') {
-                return next({message: 'Invalid token purpose', code: 403});
+                return res.handleError('Invalid token purpose', 403, next);
             }
 
             bcrypt.hash(newPassword, null, null, (err, hash) => {
                 if (err) {
-                    return next({message: `${err.name}: ${err.message}`, code: 403});
+                    return res.handleError(`${err.name}: ${err.message}`, 403, next);
                 }
                 User.update({_id: new ObjectId(req.params.id)}, {$set: {password: hash}}, (err) => {
                     if (err) {
-                        return next({message: `${err.name}: ${err.message}`, code: 403});
+                        return res.handleError(`${err.name}: ${err.message}`, 403, next);
                     }
                     res.status(204).send();
                 });
