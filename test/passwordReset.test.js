@@ -11,10 +11,12 @@ chai.use(chaiHttp);
 describe('Password reset', () => {
 
     const username = '__hello__';
+    const username2 = '__hello2__';
     const password = '__hello__';
     const newPassword = '__world__';
     const newPasswordRepeat = '__world__';
     const email = 'hello@example.com';
+    const email2 = 'hello2@example.com';
     const body = {
         suppressEmail: true,
         registration: {
@@ -24,21 +26,18 @@ describe('Password reset', () => {
             repeatPassword: password,
         },
     };
-    let userId;
-    let loginToken;
-    let activationToken;
-    let passwordResetToken;
+    let userId, loginToken, activationToken, passwordResetToken;
+    let userId2, loginToken2, activationToken2, passwordResetToken2;
 
-
-    const cleanup = (done) => {
+    const cleanup = (done, callback) => {
         chai.request(server)
             .get(`${process.env.API_PREFIX}/users/${username}`)
             .end((err, res) => {
                 if (err) {
-                    return done();
+                    return typeof callback === 'function' ? callback(done) : done();
                 }
                 if (res.statusCode !== 200) {
-                    return done();
+                    return typeof callback === 'function' ? callback(done) : done();
                 }
                 const {body} = res;
                 loginToken = jwt.sign({
@@ -49,11 +48,65 @@ describe('Password reset', () => {
                 chai.request(server)
                     .delete(`${process.env.API_PREFIX}/users/${body.login}`)
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end(() => done());
+                    .end(() => {
+                        typeof callback === 'function' ? callback(done) : done();
+                    });
             });
     };
 
-    before(done => cleanup(done));
+    const createUser2 = (done) => {
+        chai.request(server).post(`${process.env.API_PREFIX}/users`).send({
+            suppressEmail: true,
+            registration: {
+                username: username2,
+                password,
+                email: email2,
+                repeatPassword: password,
+            },
+        }).end((err, res) => {
+            if (res.statusCode === 201) {
+                const location = res.get('Location');
+                const parts = location.split('/');
+                chai.request(server)
+                    .get(`${process.env.API_PREFIX}/users/${parts[parts.length - 1]}`)
+                    .end((err, res) => {
+                        userId2 = res.body.id;
+                        loginToken2 = jwt.sign({
+                            sub: userId2,
+                            purpose: 'login',
+                        }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
+                        activationToken2 = jwt.sign({
+                            sub: userId2,
+                            purpose: 'activation',
+                        }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
+
+                        chai.request(server)
+                            .put(`${process.env.API_PREFIX}/users/${userId2}`)
+                            .set('Authorization', `Bearer ${activationToken2}`)
+                            .end(() => {
+                                User.findOne({_id: userId2}, (err, user) => {
+                                    passwordResetToken2 = jwt.sign({
+                                        sub: userId2,
+                                        purpose: 'password-reset',
+                                    }, `${process.env.AUTH_SECRET}${user.password}`, {algorithm: 'HS256'});
+                                    done();
+                                });
+                            });
+                    });
+            } else {
+                done();
+            }
+        });
+    };
+
+    const removeUser2 = (done) => {
+        chai.request(server)
+            .delete(`${process.env.API_PREFIX}/users/${username2}`)
+            .set('Authorization', `Bearer ${loginToken2}`)
+            .end(() => done());
+    };
+
+    before(done => cleanup(done, createUser2));
 
     beforeEach((done) => {
         chai.request(server).post(`${process.env.API_PREFIX}/users`).send(body).end((err, res) => {
@@ -92,7 +145,7 @@ describe('Password reset', () => {
         });
     });
 
-    after(done => cleanup(done));
+    after(done => cleanup(done, removeUser2));
 
     it('it should succeed resetting password when body and token present', (done) => {
         chai.request(server)
@@ -133,6 +186,25 @@ describe('Password reset', () => {
                 should.exist(err);
                 res.should.have.status(404);
                 done();
+            });
+    });
+    it('it should fail resetting password while using token for different user', (done) => {
+        chai.request(server)
+            .patch(`${process.env.API_PREFIX}/users/${userId2}`)
+            .set('Authorization', `Bearer ${passwordResetToken}`)
+            .send({newPassword, newPasswordRepeat})
+            .end((err, res) => {
+                should.exist(err);
+                res.should.have.status(403);
+                chai.request(server)
+                    .patch(`${process.env.API_PREFIX}/users/${userId}`)
+                    .set('Authorization', `Bearer ${passwordResetToken2}`)
+                    .send({newPassword, newPasswordRepeat})
+                    .end((err, res) => {
+                        should.exist(err);
+                        res.should.have.status(403);
+                        done();
+                    });
             });
     });
 });
