@@ -79,7 +79,8 @@ describe('Users', () => {
     describe('View', () => {
         it('it should fail when trying to view user who does not exist', (done) => {
             chai.request(server)
-                .get(`${process.env.API_PREFIX}/users/${username}_who_does_not_exist`)
+                .get(`${process.env.API_PREFIX}/users/${username.split('').reverse().join('')}`)
+                .set('Authorization', `Bearer ${loginToken}`)
                 .end((err, res) => {
                     should.exist(err);
                     res.should.have.status(404);
