@@ -28,6 +28,7 @@ describe('Password reset', () => {
     };
     let userId, loginToken, activationToken, passwordResetToken;
     let userId2, loginToken2, activationToken2, passwordResetToken2;
+    let incorrectlyHashedLoginToken, incorrectlyHashedActivationToken;
 
     const cleanup = (done, callback) => {
         chai.request(server)
@@ -136,6 +137,15 @@ describe('Password reset', () => {
                                         purpose: 'password-reset',
                                     }, `${process.env.AUTH_SECRET}${user.password}`, {algorithm: 'HS256'});
                                     done();
+                                    incorrectlyHashedLoginToken = jwt.sign({
+                                        sub: userId,
+                                        purpose: 'login',
+                                    }, `${process.env.AUTH_SECRET}${user.password}`, {algorithm: 'HS256'});
+                                    incorrectlyHashedActivationToken = jwt.sign({
+                                        sub: userId,
+                                        purpose: 'activation',
+                                    }, `${process.env.AUTH_SECRET}${user.password}`, {algorithm: 'HS256'});
+                                    done();
                                 });
                             });
                     });
@@ -195,7 +205,23 @@ describe('Password reset', () => {
                     .end((err, res) => {
                         should.exist(err);
                         res.should.have.status(403);
-                        done();
+                        chai.request(server)
+                            .patch(`${process.env.API_PREFIX}/users/${userId}`)
+                            .set('Authorization', `Bearer ${incorrectlyHashedLoginToken}`)
+                            .send({newPassword, newPasswordRepeat})
+                            .end((err, res) => {
+                                should.exist(err);
+                                res.should.have.status(403);
+                                chai.request(server)
+                                    .patch(`${process.env.API_PREFIX}/users/${userId}`)
+                                    .set('Authorization', `Bearer ${incorrectlyHashedActivationToken}`)
+                                    .send({newPassword, newPasswordRepeat})
+                                    .end((err, res) => {
+                                        should.exist(err);
+                                        res.should.have.status(403);
+                                        done();
+                                    });
+                            });
                     });
             });
     });
