@@ -3,16 +3,17 @@ const chaiHttp = require('chai-http');
 const app = require('../app');
 const should = chai.should();
 const jwt = require('jsonwebtoken');
-//const bcrypt = require('bcrypt-nodejs');
-
 const server = app.server;
+const User = require('../data/models/user');
 
 chai.use(chaiHttp);
 
-describe('Account recovery', () => {
+describe('Password reset', () => {
 
     const username = '__hello__';
     const password = '__hello__';
+    const newPassword = '__world__';
+    const newPasswordRepeat = '__world__';
     const email = 'hello@example.com';
     const body = {
         suppressEmail: true,
@@ -26,6 +27,8 @@ describe('Account recovery', () => {
     let userId;
     let loginToken;
     let activationToken;
+    let passwordResetToken;
+
 
     const cleanup = (done) => {
         chai.request(server)
@@ -73,7 +76,15 @@ describe('Account recovery', () => {
                         chai.request(server)
                             .put(`${process.env.API_PREFIX}/users/${userId}`)
                             .set('Authorization', `Bearer ${activationToken}`)
-                            .end(() => done());
+                            .end(() => {
+                                User.findOne({_id: userId}, (err, user) => {
+                                    passwordResetToken = jwt.sign({
+                                        sub: userId,
+                                        purpose: 'password-reset',
+                                    }, `${process.env.AUTH_SECRET}${user.password}`, {algorithm: 'HS256'});
+                                    done();
+                                });
+                            });
                     });
             } else {
                 done();
@@ -83,56 +94,44 @@ describe('Account recovery', () => {
 
     after(done => cleanup(done));
 
-    it('it should fail initiating account recovery when no body posted', (done) => {
+    it('it should succeed resetting password when body and token present', (done) => {
         chai.request(server)
-            .post(`${process.env.API_PREFIX}/auth/account-recovery`)
-            .end((err, res) => {
-                should.exist(err);
-                res.should.have.status(403);
-                done();
-            });
-    });
-    it('it should fail initiating account recovery when email malformed', (done) => {
-        chai.request(server)
-            .post(`${process.env.API_PREFIX}/auth/account-recovery`)
-            .send({email: 'malformed'})
-            .end((err, res) => {
-                should.exist(err);
-                res.should.have.status(403);
-                done();
-            });
-    });
-    it('it should not fail initiating account if email does not exist in the system', (done) => {
-        chai.request(server)
-            .post(`${process.env.API_PREFIX}/auth/account-recovery`)
-            .send({email: 'does-not-exist@example.com'})
+            .patch(`${process.env.API_PREFIX}/users/${userId}`)
+            .set('Authorization', `Bearer ${passwordResetToken}`)
+            .send({newPassword, newPasswordRepeat})
             .end((err, res) => {
                 should.not.exist(err);
-                res.should.have.status(201);
+                res.should.have.status(204);
                 done();
             });
     });
-    it('it should fail initiating account if email exists but recovery url missing', (done) => {
+    it('it should fail resetting password when no body and no token', (done) => {
         chai.request(server)
-            .post(`${process.env.API_PREFIX}/auth/account-recovery`)
-            .send({email: 'hello@example.com'})
+            .patch(`${process.env.API_PREFIX}/users/${userId}`)
             .end((err, res) => {
                 should.exist(err);
                 res.should.have.status(403);
                 done();
             });
     });
-    it('it should succeed initiating account if email exists and recovery url is not missing', (done) => {
+    it('it should fail resetting password when no body', (done) => {
         chai.request(server)
-            .post(`${process.env.API_PREFIX}/auth/account-recovery`)
-            .send({
-                email: 'hello@example.com',
-                recoveryUrl: 'http://example.com',
-                suppressEmail: true, // TODO: Find a way to mock sending emails properly
-            })
+            .patch(`${process.env.API_PREFIX}/users/${userId}`)
+            .set('Authorization', `Bearer ${passwordResetToken}`)
             .end((err, res) => {
-                should.not.exist(err);
-                res.should.have.status(201);
+                should.exist(err);
+                res.should.have.status(403);
+                done();
+            });
+    });
+    it('it should fail resetting password for user who does not exist', (done) => {
+        chai.request(server)
+            .patch(`${process.env.API_PREFIX}/users/${userId.split('').reverse().join('')}`)
+            .set('Authorization', `Bearer ${passwordResetToken}`)
+            .send({newPassword, newPasswordRepeat})
+            .end((err, res) => {
+                should.exist(err);
+                res.should.have.status(404);
                 done();
             });
     });
