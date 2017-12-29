@@ -76,6 +76,43 @@ describe('Users', () => {
 
     afterEach(done => cleanup(done));
 
+    describe('View', () => {
+        it('it should fail when trying to view user who does not exist', (done) => {
+            chai.request(server)
+                .get(`${process.env.API_PREFIX}/users/${username}_who_does_not_exist`)
+                .end((err, res) => {
+                    should.exist(err);
+                    res.should.have.status(404);
+                    done();
+                });
+        });
+    });
+
+    describe('Creation', () => {
+        it('it should fail creating user when passwords do not match', (done) => {
+            chai.request(server)
+                .delete(`${process.env.API_PREFIX}/users/${body.login}`)
+                .set('Authorization', `Bearer ${loginToken}`)
+                .end(() => {
+                    chai.request(server).post(`${process.env.API_PREFIX}/users`)
+                        .send({
+                            suppressEmail: true,
+                            registration: {
+                                username,
+                                password,
+                                email: 'hello@example.com',
+                                repeatPassword: `${password} does not match`,
+                            },
+                        })
+                        .end((err, res) => {
+                            should.exist(err);
+                            res.should.have.status(403);
+                            done();
+                        });
+                });
+        });
+    });
+
     describe('Activation', () => {
         it('it should succeed activating user when activation token present', (done) => {
             chai.request(server)
