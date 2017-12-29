@@ -15,7 +15,7 @@ router.post('/', (req, res) => {
 
     user.active = false;
     if (user.password !== user.repeatPassword) {
-        return res.status(400).json({success: false, message: 'Password not confirmed properly'});
+        return res.status(403).json({success: false, message: 'Password not confirmed properly'});
     }
     User.create(user, (err, created) => {
         if (!err) {
@@ -68,14 +68,7 @@ router.post('/', (req, res) => {
     });
 });
 
-router.put('/:id', loggedInOrActivating, (req, res) => {
-    User.update({_id: new ObjectId(req.params.id)}, {$set: res.decoded.purpose === 'login' ? req.body : {active: true}}, (err) => {
-        if (err) {
-            throw Error(err);
-        }
-        res.status(204).send();
-    });
-});
+router.put('/:id', loggedInOrActivating, (req, res) => User.update({_id: new ObjectId(req.params.id)}, {$set: res.decoded.purpose === 'login' ? req.body : {active: true}}, () => res.status(204).send()));
 
 router.patch('/:id', (req, res, next) => {
 
@@ -100,51 +93,22 @@ router.patch('/:id', (req, res, next) => {
     }
 
     User.findOne({_id: req.params.id}, (err, user) => {
-        if (err) {
-            return res.handleError(`${err.name}: ${err.message}`, 403, next);
-        }
         if (!user) {
             return res.handleError('No such user', 404, next);
         }
-        jwt.verify(token, `${process.env.AUTH_SECRET}${user.password}`, {algorithms: 'HS256'}, (err, decoded) => {
+        jwt.verify(token, `${process.env.AUTH_SECRET}${user.password}`, {algorithms: 'HS256'}, (err) => {
             if (err) {
                 return res.handleError(`${err.name}: ${err.message}`, 403, next);
             }
-            // TODO: No exp claim available...
-            if (Math.floor(Date.now() / 1000) > decoded.exp) {
-                return res.handleError('Expired token', 403, next);
-            }
-            if (decoded.purpose !== 'password-reset') {
-                return res.handleError('Invalid token purpose', 403, next);
-            }
-
             bcrypt.hash(newPassword, null, null, (err, hash) => {
-                if (err) {
-                    return res.handleError(`${err.name}: ${err.message}`, 403, next);
-                }
-                User.update({_id: new ObjectId(req.params.id)}, {$set: {password: hash}}, (err) => {
-                    if (err) {
-                        return res.handleError(`${err.name}: ${err.message}`, 403, next);
-                    }
-                    res.status(204).send();
-                });
+                User.update({_id: new ObjectId(req.params.id)}, {$set: {password: hash}}, () => res.status(204).send());
             });
         });
     });
 });
 
-router.get('/:username', loadUser, (req, res, next) => {
+router.get('/:username', loadUser, (req, res) => {
     User.findOne({username: req.params.username}, (err, user) => {
-        if (err) {
-            return next(err);
-        }
-        if (!user) {
-            res.statusMessage = 'User not found';
-            return res.status(404).json({
-                success: false,
-                message: 'User not found',
-            });
-        }
         const {_id, username, active, meta} = user;
         res.status(200).json({
             id: _id,
@@ -156,13 +120,6 @@ router.get('/:username', loadUser, (req, res, next) => {
     });
 });
 
-router.delete('/:username', loggedIn, (req, res) => {
-    User.remove({username: req.params.username}, (err) => {
-        if (err) {
-            throw Error(err);
-        }
-        res.status(204).send();
-    });
-});
+router.delete('/:username', loggedIn, (req, res) => User.remove({username: req.params.username}, () => res.status(204).send()));
 
 module.exports = router;
