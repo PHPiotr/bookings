@@ -136,7 +136,6 @@ describe('Password reset', () => {
                                         sub: userId,
                                         purpose: 'password-reset',
                                     }, `${process.env.AUTH_SECRET}${user.password}`, {algorithm: 'HS256'});
-                                    done();
                                     incorrectlyHashedLoginToken = jwt.sign({
                                         sub: userId,
                                         purpose: 'login',
