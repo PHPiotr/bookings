@@ -158,6 +158,47 @@ describe('Password reset', () => {
                 done();
             });
     });
+    it('it should fail resetting password when passwords do not match', (done) => {
+        chai.request(server)
+            .patch(`${process.env.API_PREFIX}/users/${userId}`)
+            .set('Authorization', `Bearer ${passwordResetToken}`)
+            .send({newPassword, newPasswordRepeat: 'incorrect'})
+            .end((err, res) => {
+                should.exist(err);
+                res.should.have.status(403);
+                done();
+            });
+    });
+    it('it should fail resetting password when password is empty string', (done) => {
+        chai.request(server)
+            .patch(`${process.env.API_PREFIX}/users/${userId}`)
+            .set('Authorization', `Bearer ${passwordResetToken}`)
+            .send({newPassword: '', newPasswordRepeat: ''})
+            .end((err, res) => {
+                should.exist(err);
+                res.should.have.status(403);
+                done();
+            });
+    });
+    it('it should fail resetting password when incorrect token purpose', (done) => {
+        chai.request(server)
+            .patch(`${process.env.API_PREFIX}/users/${userId}`)
+            .set('Authorization', `Bearer ${loginToken}`)
+            .send({newPassword, newPasswordRepeat})
+            .end((err, res) => {
+                should.exist(err);
+                res.should.have.status(403);
+                chai.request(server)
+                    .patch(`${process.env.API_PREFIX}/users/${userId}`)
+                    .set('Authorization', `Bearer ${activationToken}`)
+                    .send({newPassword, newPasswordRepeat})
+                    .end((err, res) => {
+                        should.exist(err);
+                        res.should.have.status(403);
+                        done();
+                    });
+            });
+    });
     it('it should fail resetting password when no body and no token', (done) => {
         chai.request(server)
             .patch(`${process.env.API_PREFIX}/users/${userId}`)
