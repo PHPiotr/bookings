@@ -112,6 +112,28 @@ describe('Users', () => {
                         });
                 });
         });
+        it('it should fail creating user when email not valid', (done) => {
+            chai.request(server)
+                .delete(`${process.env.API_PREFIX}/users/${body.login}`)
+                .set('Authorization', `Bearer ${loginToken}`)
+                .end(() => {
+                    chai.request(server).post(`${process.env.API_PREFIX}/users`)
+                        .send({
+                            suppressEmail: true,
+                            registration: {
+                                username,
+                                password,
+                                email: 'notvalidemailaddress',
+                                repeatPassword: password,
+                            },
+                        })
+                        .end((err, res) => {
+                            should.exist(err);
+                            res.should.have.status(403);
+                            done();
+                        });
+                });
+        });
     });
 
     describe('Activation', () => {
