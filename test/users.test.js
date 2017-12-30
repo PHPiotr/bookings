@@ -24,7 +24,9 @@ describe('Users', () => {
         },
     };
     let userId;
+    let userIdWhoDoesNotExist;
     let loginToken;
+    let loginTokenOfUserWhodoesNotExist;
     let activationToken;
 
     const cleanup = (done) => {
@@ -38,8 +40,13 @@ describe('Users', () => {
                     return done();
                 }
                 const {body} = res;
+                userIdWhoDoesNotExist = body.id.split('').reverse().join();
                 loginToken = jwt.sign({
                     sub: body.id,
+                    purpose: 'login',
+                }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
+                loginTokenOfUserWhodoesNotExist = jwt.sign({
+                    sub: userIdWhoDoesNotExist,
                     purpose: 'login',
                 }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
 
@@ -149,6 +156,46 @@ describe('Users', () => {
                 .end((err, res) => {
                     should.exist(err);
                     res.should.have.status(409);
+                    done();
+                });
+        });
+    });
+
+    describe('Edition', () => {
+        it('it should fail editing user when no login token', (done) => {
+            chai.request(server)
+                .put(`${process.env.API_PREFIX}/users/${userId}`)
+                .set('Authorization', `Bearer ${activationToken}`)
+                .end(() => {
+                    chai.request(server)
+                        .put(`${process.env.API_PREFIX}/users/${userId}`)
+                        .send({active: false})
+                        .end((err, res) => {
+                            should.exist(err);
+                            res.should.have.status(403);
+                            done();
+                        });
+                });
+        });
+        it('it should fail editing user using someone else\'s token', (done) => {
+            chai.request(server)
+                .put(`${process.env.API_PREFIX}/users/${userId.split('').reverse().join('')}`)
+                .set('Authorization', `Bearer ${loginToken}`)
+                .send({active: false})
+                .end((err, res) => {
+                    should.exist(err);
+                    res.should.have.status(403);
+                    done();
+                });
+        });
+        it('it should fail editing user who does not exist', (done) => {
+            chai.request(server)
+                .put(`${process.env.API_PREFIX}/users/${userIdWhoDoesNotExist}`)
+                .set('Authorization', `Bearer ${loginTokenOfUserWhodoesNotExist}`)
+                .send({active: false})
+                .end((err, res) => {
+                    should.exist(err);
+                    res.should.have.status(404);
                     done();
                 });
         });
