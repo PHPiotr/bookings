@@ -129,7 +129,7 @@ describe('Users', () => {
                         })
                         .end((err, res) => {
                             should.exist(err);
-                            res.should.have.status(403);
+                            res.should.have.status(422);
                             done();
                         });
                 });
