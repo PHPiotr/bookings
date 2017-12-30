@@ -9,34 +9,27 @@ module.exports = (req, res, next) => {
         : (req.params['Authorization'] || req.params['authorization']);
 
     if (!token) {
-        return res.status(403).json({error: 'No token provided'});
+        return res.handleError('No token provided', 403, next);
     }
 
     return jwt.verify(token, process.env.AUTH_SECRET, {algorithms: 'HS256'}, (err, decoded) => {
         if (err) {
-            return res.status(403).json({error: 'Failed to authenticate token.'});
+            return res.handleError('Failed to authenticate token', 403, next);
         }
-        if (Math.floor(Date.now() / 1000) > decoded.exp) {
-            return res.status(403).json({error: 'Token expired'});
+        if (decoded.sub !== req.params.id) {
+            return res.handleError('Someone else\'s token', 403, next);
         }
-        User.findOne({_id: decoded.sub}, (err, user) => {
-            if (err) {
-                return next(err);
-            }
+        User.findOne({_id: req.params.id}, (err, user) => {
             if (decoded.purpose === 'activation') {
                 if (user.active) {
-                    return res.status(400).json({error: 'User already activated'});
+                    return res.handleError('User already activated', 400, next);
                 }
-                if (decoded.sub !== req.params.id) {
-                    return res.status(403).json({error: 'Invalid activation code'});
-                }
-            }
-            if (decoded.purpose === 'login' && !user.active) {
-                return res.status(403).json({error: 'User not active'});
             }
             if (!user) {
-                res.statusMessage = 'Booking not found';
-                return res.status(404).json({error: 'User not found'});
+                return res.handleError('User not found', 404, next);
+            }
+            if (decoded.purpose === 'login' && !user.active) {
+                return res.handleError('User not active', 403, next);
             }
             res.decoded = decoded;
             res.user = user;
