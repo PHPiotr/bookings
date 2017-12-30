@@ -60,7 +60,7 @@ router.post('/', (req, res) => {
         }
 
         if (err.name === 'ValidationError') {
-            return res.status(400).json({success: false, message: err.message});
+            return res.status(422).json({success: false, message: err.message});
         }
         if (err.code == 11000) {
             return res.status(400).json({success: false, message: 'Such user already exists'});
