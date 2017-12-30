@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 const sendgrid = require('sendgrid');
 const bcrypt = require('bcrypt-nodejs');
 
-router.post('/', (req, res) => {
+router.post('/', (req, res, next) => {
     const user = req.body.registration;
     const sendActivationEmail = !req.body.suppressEmail;
 
@@ -60,10 +60,10 @@ router.post('/', (req, res) => {
         }
 
         if (err.name === 'ValidationError') {
-            return res.status(422).json({success: false, message: err.message});
+            return res.handleError(err.message, 422, next);
         }
         if (err.code == 11000) {
-            return res.status(400).json({success: false, message: 'Such user already exists'});
+            return res.handleError('Such user already exists', 409, next);
         }
     });
 });

@@ -12,13 +12,14 @@ describe('Users', () => {
 
     const username = '__hello__';
     const password = '__hello__';
+    const email = 'hello@example.com';
     const basic = new Buffer(username + ':' + password).toString('base64');
     const body = {
         suppressEmail: true,
         registration: {
             username,
             password,
-            email: 'hello@example.com',
+            email,
             repeatPassword: password,
         },
     };
@@ -132,6 +133,23 @@ describe('Users', () => {
                             res.should.have.status(422);
                             done();
                         });
+                });
+        });
+        it('it should fail creating user who already exists', (done) => {
+            chai.request(server).post(`${process.env.API_PREFIX}/users`)
+                .send({
+                    suppressEmail: true,
+                    registration: {
+                        username,
+                        password,
+                        email,
+                        repeatPassword: password,
+                    },
+                })
+                .end((err, res) => {
+                    should.exist(err);
+                    res.should.have.status(409);
+                    done();
                 });
         });
     });
