@@ -21,7 +21,7 @@ const validateDates = (req, res, next) => {
         req.query.to = getFormattedValue(to);
         next();
     } catch (e) {
-        next(e);
+        res.handleError(e.message, 422, next);
     }
 }
 
