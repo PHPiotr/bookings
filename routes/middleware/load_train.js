@@ -11,17 +11,13 @@ module.exports = (req, res, next) => {
     }
     Train.findOne({_id: id})
         .exec((err, train) => {
-            if (err) {
-                return next(err);
-            }
             if (!train) {
-                res.statusMessage = 'Booking not found';
-                return res.status(404).json({error: 'Booking not found'});
+                return res.handleError('Booking not found', 404, next);
             }
             if (res.user._id != train.created_by.toString()) {
-                return res.status(403).json({error: 'Not your booking'});
+                return res.handleError('Not your booking', 403, next);
             }
             res.train = train;
-            next();
+            next(err);
         });
 };

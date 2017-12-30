@@ -2,14 +2,10 @@ const User = require('../../data/models/user');
 
 module.exports = (req, res, next) => {
     User.findOne({username: req.params.username}, (err, user) => {
-        if (err) {
-            return next(err);
-        }
         if (!user) {
-            res.statusMessage = 'User not found';
-            return res.status(404).json({error: 'User not found'});
+            return res.handleError('User not found', 404, next);
         }
         res.user = user;
-        next();
+        next(err);
     });
 };
