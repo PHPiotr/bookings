@@ -11,23 +11,13 @@ module.exports = (req, res, next) => {
     }
     Hostel.findOne({_id: id})
         .exec((err, hostel) => {
-            if (err) {
-                return next(err);
-            }
             if (!hostel) {
-                res.statusMessage = 'Booking not found';
-                return res.status(404).json({
-                    success: false,
-                    message: 'Booking not found',
-                });
+                return res.handleError('Booking not found', 404, next);
             }
             if (res.user._id != hostel.created_by.toString()) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Not your booking',
-                });
+                return res.handleError('Not your booking', 403, next);
             }
             res.hostel = hostel;
-            next();
+            next(err);
         });
 };
