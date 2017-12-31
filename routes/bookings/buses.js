@@ -98,15 +98,7 @@ router.get('/', loggedIn, (req, res, next) => {
                             },
                         },
                     ],
-                    function (err, results) {
-                        if (err) {
-                            return next(err);
-                        }
-                        if (!results) {
-                            return next();
-                        }
-                        next(err, results);
-                    }
+                    (err, results) => next(err, results)
                 );
             },
             (next) => {
@@ -135,15 +127,7 @@ router.get('/', loggedIn, (req, res, next) => {
                             },
                         },
                     ],
-                    function (err, results) {
-                        if (err) {
-                            return next(err);
-                        }
-                        if (!results) {
-                            return next();
-                        }
-                        next(err, results[0]);
-                    }
+                    (err, results) => next(err, results[0])
                 );
             },
         ],
@@ -179,25 +163,9 @@ router.get('/:id', loggedIn, loadBus, (req, res) => {
     res.json(res.bus);
 });
 
-router.put('/:id', loggedIn, loadBus, (req, res) => {
-    const query = {_id: new ObjectId(res.bus._id)};
-    const update = {$set: req.body};
-    Bus.update(query, update, (err) => {
-        if (err) {
-            throw Error(err);
-        }
-        res.status(204).send();
-    });
-});
+router.put('/:id', loggedIn, loadBus, (req, res) => Bus.update({_id: new ObjectId(res.bus._id)}, {$set: req.body}, () => res.status(204).send()));
 
-router.delete('/:id', loggedIn, loadBus, (req, res) => {
-    Bus.remove({_id: new ObjectId(res.bus._id)}, (err) => {
-        if (err) {
-            throw Error(err);
-        }
-        res.status(204).send();
-    });
-});
+router.delete('/:id', loggedIn, loadBus, (req, res) => Bus.remove({_id: new ObjectId(res.bus._id)}, () => res.status(204).send()));
 
 router.post('/', loggedIn, (req, res, next) => {
 

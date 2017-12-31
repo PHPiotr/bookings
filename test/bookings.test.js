@@ -193,6 +193,27 @@ describe('Bookings', () => {
                             });
                     });
             });
+            it(`it should succeed editing ${bookingType} booking`, (done) => {
+                chai.request(server)
+                    .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                    .send(bookings[bookingType])
+                    .set('Authorization', `Bearer ${loginToken}`)
+                    .end((err, res) => {
+                        const location = res.get('Location');
+                        const parts = location.split('/');
+                        const bookingId = parts[parts.length - 1];
+                        bookingsIds[bookingType] = bookingId;
+                        chai.request(server)
+                            .put(`${process.env.API_PREFIX}/bookings/${bookingType}/${bookingId}`)
+                            .send({price: 99.99})
+                            .set('Authorization', `Bearer ${loginToken}`)
+                            .end((viewErr, viewRes) => {
+                                should.not.exist(viewErr);
+                                viewRes.should.have.status(204);
+                                done();
+                            });
+                    });
+            });
             it(`it should fail viewing someone else's ${bookingType} booking`, (done) => {
 
                 let userIdOfSomeoneElse, loginTokenOfSomeoneElse, activationTokenOfSomeoneElse;
@@ -295,7 +316,6 @@ describe('Bookings', () => {
                             });
                     });
             });
-
 
             it(`it should fail creating ${bookingType} booking when no login token sent`, (done) => {
                 chai.request(server)

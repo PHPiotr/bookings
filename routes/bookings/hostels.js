@@ -93,15 +93,7 @@ router.get('/', loggedIn, (req, res, next) => {
                             },
                         },
                     ],
-                    (err, results) => {
-                        if (err) {
-                            return next(err);
-                        }
-                        if (!results) {
-                            return next();
-                        }
-                        next(err, results);
-                    }
+                    (err, results) => next(err, results)
                 );
             },
             (next) => {
@@ -120,17 +112,7 @@ router.get('/', loggedIn, (req, res, next) => {
                             },
                         },
                     ],
-                    (err, results) => {
-                        var cost;
-                        if (err) {
-                            return next(err);
-                        }
-                        if (!results) {
-                            return next();
-                        }
-                        cost = (results[0] && results[0].cost) || '0';
-                        next(err, cost);
-                    }
+                    (err, results) => next(err, (results[0] && results[0].cost) || '0')
                 );
             },
         ],
@@ -163,25 +145,9 @@ router.get('/:id', loggedIn, loadHostel, (req, res) => {
     res.json(res.hostel);
 });
 
-router.put('/:id', loggedIn, loadHostel, (req, res) => {
-    const query = {_id: new ObjectId(res.hostel.id)};
-    const update = {$set: req.body};
-    Hostel.update(query, update, (err) => {
-        if (err) {
-            throw Error(err);
-        }
-        res.status(204).send();
-    });
-});
+router.put('/:id', loggedIn, loadHostel, (req, res) => Hostel.update({_id: new ObjectId(res.hostel.id)}, {$set: req.body}, () => res.status(204).send()));
 
-router.delete('/:id', loggedIn, loadHostel, (req, res) => {
-    Hostel.remove({_id: new ObjectId(res.hostel.id)}, (err) => {
-        if (err) {
-            throw Error(err);
-        }
-        res.status(204).send();
-    });
-});
+router.delete('/:id', loggedIn, loadHostel, (req, res) => Hostel.remove({_id: new ObjectId(res.hostel.id)}, () => res.status(204).send()));
 
 router.post('/', loggedIn, (req, res, next) => {
 

@@ -100,15 +100,7 @@ router.get('/', loggedIn, (req, res, next) => {
                             },
                         },
                     ],
-                    (err, results) => {
-                        if (err) {
-                            return next(err);
-                        }
-                        if (!results) {
-                            return next();
-                        }
-                        next(err, results);
-                    }
+                    (err, results) => next(err, results)
                 );
             },
             (next) => {
@@ -137,15 +129,7 @@ router.get('/', loggedIn, (req, res, next) => {
                             },
                         },
                     ],
-                    (err, results) => {
-                        if (err) {
-                            return next(err);
-                        }
-                        if (!results) {
-                            return next();
-                        }
-                        next(err, results[0]);
-                    }
+                    (err, results) => next(err, results[0])
                 );
             },
         ],
@@ -182,25 +166,9 @@ router.get('/:id', loggedIn, loadTrain, (req, res) => {
     res.json(res.train);
 });
 
-router.put('/:id', loggedIn, loadTrain, (req, res) => {
-    const query = {_id: new ObjectId(res.train._id)};
-    const update = {$set: req.body};
-    Train.update(query, update, (err) => {
-        if (err) {
-            throw Error(err);
-        }
-        res.status(204).send();
-    });
-});
+router.put('/:id', loggedIn, loadTrain, (req, res) => Train.update({_id: new ObjectId(res.train._id)}, {$set: req.body}, () => res.status(204).send()));
 
-router.delete('/:id', loggedIn, loadTrain, (req, res) => {
-    Train.remove({_id: new ObjectId(res.train._id)}, (err) => {
-        if (err) {
-            throw Error(err);
-        }
-        res.status(204).send();
-    });
-});
+router.delete('/:id', loggedIn, loadTrain, (req, res) => Train.remove({_id: new ObjectId(res.train._id)}, () => res.status(204).send()));
 
 router.post('/', loggedIn, (req, res, next) => {
 
