@@ -17,7 +17,7 @@ router.post('/', (req, res, next) => {
         return res.status(403).json({success: false, message: 'Password not confirmed properly'});
     }
     User.create(user, (err, created) => {
-        if (!err) {
+        if (!err && created) {
             const activationUrl = req.body.activationUrl;
             const appName = req.body.appName;
             const activationFromEmail = req.body.activationFromEmail;
