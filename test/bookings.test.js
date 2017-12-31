@@ -193,6 +193,34 @@ describe('Bookings', () => {
                             });
                     });
             });
+            it(`it should fail creating ${bookingType} booking which already exists`, (done) => {
+                if (bookingType === 'trains') {
+                    // Train has no unique fields
+                    return done();
+                }
+                chai.request(server)
+                    .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                    .send(bookings[bookingType])
+                    .set('Authorization', `Bearer ${loginToken}`)
+                    .end((err, res) => {
+                        const location = res.get('Location');
+                        const parts = location.split('/');
+                        const bookingId = parts[parts.length - 1];
+                        bookingsIds[bookingType] = bookingId;
+                        chai.request(server)
+                            .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                            .send(bookings[bookingType])
+                            .set('Authorization', `Bearer ${loginToken}`)
+                            .end((err, res) => {
+                                should.exist(err);
+                                res.should.have.status(409);
+                                chai.request(server)
+                                    .delete(`${process.env.API_PREFIX}/bookings/${bookingType}/${bookingId}`)
+                                    .set('Authorization', `Bearer ${loginToken}`)
+                                    .end(() => done());
+                            });
+                    });
+            });
             it(`it should succeed editing ${bookingType} booking`, (done) => {
                 chai.request(server)
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)

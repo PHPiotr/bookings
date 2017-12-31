@@ -167,7 +167,7 @@ router.put('/:id', loggedIn, loadBus, (req, res) => Bus.update({_id: new ObjectI
 
 router.delete('/:id', loggedIn, loadBus, (req, res) => Bus.remove({_id: new ObjectId(res.bus._id)}, () => res.status(204).send()));
 
-router.post('/', loggedIn, (req, res, next) => {
+router.post('/', loggedIn, (req, res) => {
 
     const bus = req.body;
     bus.created_by = res.user._id;
@@ -179,7 +179,6 @@ router.post('/', loggedIn, (req, res, next) => {
             if (err.name === 'ValidationError') {
                 return res.status(403).json({error: 'Booking validation failed', errors: err.errors});
             }
-            return next(err);
         }
         res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/bookings/buses/${created._id}`);
 

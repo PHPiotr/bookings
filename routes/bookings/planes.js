@@ -207,7 +207,7 @@ router.put('/:id', loggedIn, loadPlane, (req, res) => Plane.update({_id: new Obj
 
 router.delete('/:id', loggedIn, loadPlane, (req, res) => Plane.remove({_id: new ObjectId(res.plane.id)}, () => res.status(204).send()));
 
-router.post('/', loggedIn, (req, res, next) => {
+router.post('/', loggedIn, (req, res) => {
 
     const plane = req.body;
     plane.created_by = res.user._id;
@@ -219,7 +219,6 @@ router.post('/', loggedIn, (req, res, next) => {
             if (err.name === 'ValidationError') {
                 return res.status(403).json({error: 'Booking validation failed', errors: err.errors});
             }
-            return next(err);
         }
         res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/bookings/planes/${created._id}`);
 
