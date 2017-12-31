@@ -149,7 +149,7 @@ router.put('/:id', loggedIn, loadHostel, (req, res) => Hostel.update({_id: new O
 
 router.delete('/:id', loggedIn, loadHostel, (req, res) => Hostel.remove({_id: new ObjectId(res.hostel.id)}, () => res.status(204).send()));
 
-router.post('/', loggedIn, (req, res, next) => {
+router.post('/', loggedIn, (req, res) => {
 
     const hostel = req.body;
     hostel.created_by = res.user._id;

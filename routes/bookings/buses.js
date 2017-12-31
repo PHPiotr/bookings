@@ -167,7 +167,7 @@ router.put('/:id', loggedIn, loadBus, (req, res) => Bus.update({_id: new ObjectI
 
 router.delete('/:id', loggedIn, loadBus, (req, res) => Bus.remove({_id: new ObjectId(res.bus._id)}, () => res.status(204).send()));
 
-router.post('/', loggedIn, (req, res, next) => {
+router.post('/', loggedIn, (req, res) => {
 
     const bus = req.body;
     bus.created_by = res.user._id;
