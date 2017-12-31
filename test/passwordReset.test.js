@@ -18,7 +18,6 @@ describe('Password reset', () => {
     const email = 'hello@example.com';
     const email2 = 'hello2@example.com';
     const body = {
-        suppressEmail: true,
         registration: {
             username,
             password,
@@ -57,7 +56,6 @@ describe('Password reset', () => {
 
     const createUser2 = (done) => {
         chai.request(server).post(`${process.env.API_PREFIX}/users`).send({
-            suppressEmail: true,
             registration: {
                 username: username2,
                 password,

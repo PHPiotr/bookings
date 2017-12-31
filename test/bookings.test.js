@@ -51,7 +51,6 @@ const bookingsIds = {
 const username = '__hello__';
 const password = '__hello__';
 const body = {
-    suppressEmail: true,
     registration: {
         username,
         password,
@@ -202,7 +201,6 @@ describe('Bookings', () => {
                 chai.request(server)
                     .post(`${process.env.API_PREFIX}/users`)
                     .send({
-                        suppressEmail: true,
                         registration: {
                             username: usernameOfSomeoneElse,
                             password,
@@ -263,7 +261,6 @@ describe('Bookings', () => {
                 chai.request(server)
                     .post(`${process.env.API_PREFIX}/users`)
                     .send({
-                        suppressEmail: true,
                         registration: {
                             username: usernameOfSomeoneElse,
                             password,

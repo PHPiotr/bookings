@@ -15,7 +15,6 @@ describe('Users', () => {
     const email = 'hello@example.com';
     const basic = new Buffer(username + ':' + password).toString('base64');
     const body = {
-        suppressEmail: true,
         registration: {
             username,
             password,
@@ -105,7 +104,6 @@ describe('Users', () => {
                 .end(() => {
                     chai.request(server).post(`${process.env.API_PREFIX}/users`)
                         .send({
-                            suppressEmail: true,
                             registration: {
                                 username,
                                 password,
@@ -127,7 +125,6 @@ describe('Users', () => {
                 .end(() => {
                     chai.request(server).post(`${process.env.API_PREFIX}/users`)
                         .send({
-                            suppressEmail: true,
                             registration: {
                                 username,
                                 password,
@@ -145,7 +142,6 @@ describe('Users', () => {
         it('it should fail creating user who already exists', (done) => {
             chai.request(server).post(`${process.env.API_PREFIX}/users`)
                 .send({
-                    suppressEmail: true,
                     registration: {
                         username,
                         password,
