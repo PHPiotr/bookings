@@ -6,7 +6,7 @@ const express = require('express');
 const router = express.Router();
 const ObjectId = require('mongoose').Types.ObjectId;
 
-router.get('/', loggedIn, (req, res, next) => {
+router.get('/', loggedIn, (req, res) => {
 
     const currentUser = res.user._id;
     const currentPage = (req.query.page && parseInt(req.query.page, 10)) || 1;
@@ -132,16 +132,12 @@ router.get('/', loggedIn, (req, res, next) => {
             },
         ],
         (err, results) => {
-            if (err) {
-                return next(err);
-            }
             const journeys = results[0];
             const journeysExist = undefined !== results[1];
             const cost = journeysExist ? results[1].cost : 0;
             const averageCost = journeysExist ? results[1].avg_cost : 0;
             const journeysLength = journeysExist ? results[1].journeys_length : 0;
             const returnJourneysLength = journeysExist ? results[1].return_journeys_length : 0;
-
             res.json({
                 bookings: journeys,
                 currentPage: currentPage,
