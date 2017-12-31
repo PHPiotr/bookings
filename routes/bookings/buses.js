@@ -179,7 +179,6 @@ router.post('/', loggedIn, (req, res, next) => {
             if (err.name === 'ValidationError') {
                 return res.status(403).json({error: 'Booking validation failed', errors: err.errors});
             }
-            return next(err);
         }
         res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/bookings/buses/${created._id}`);
 

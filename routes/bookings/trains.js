@@ -170,19 +170,12 @@ router.put('/:id', loggedIn, loadTrain, (req, res) => Train.update({_id: new Obj
 
 router.delete('/:id', loggedIn, loadTrain, (req, res) => Train.remove({_id: new ObjectId(res.train._id)}, () => res.status(204).send()));
 
-router.post('/', loggedIn, (req, res, next) => {
-
+router.post('/', loggedIn, (req, res) => {
     const train = req.body;
     train.created_by = res.user._id;
     Train.create(train, (err, created) => {
-        if (err) {
-            if (err.code === 11000) {
-                return res.status(409).json({error: `Booking already exists`, errors: {}});
-            }
-            if (err.name === 'ValidationError') {
-                return res.status(403).json({error: 'Booking validation failed', errors: err.errors});
-            }
-            return next(err);
+        if (err && err.name === 'ValidationError') {
+            return res.status(403).json({error: 'Booking validation failed', errors: err.errors});
         }
         res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/bookings/trains/${created._id}`);
 
