@@ -90,6 +90,26 @@ describe('Report', () => {
                     done();
                 });
         });
+        it('it should succeed getting report when using proper `from` date and no `to` date', (done) => {
+            chai.request(server)
+                .get(`${process.env.API_PREFIX}/report?from=2017-12-03&`)
+                .set('Authorization', `Bearer ${loginToken}`)
+                .end((err, res) => {
+                    should.not.exist(err);
+                    res.should.have.status(200);
+                    done();
+                });
+        });
+        it('it should succeed getting report when using proper no `from` date and `to` date', (done) => {
+            chai.request(server)
+                .get(`${process.env.API_PREFIX}/report?to=2017-12-31`)
+                .set('Authorization', `Bearer ${loginToken}`)
+                .end((err, res) => {
+                    should.not.exist(err);
+                    res.should.have.status(200);
+                    done();
+                });
+        });
         it('it should succeed getting report when both `from` and `to` do not have values', (done) => {
             chai.request(server)
                 .get(`${process.env.API_PREFIX}/report?from=&to=`)
