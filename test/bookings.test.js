@@ -384,6 +384,26 @@ describe('Bookings', () => {
                         done();
                     });
             });
+            it(`it should succeed listing ${bookingType} current bookings`, (done) => {
+                chai.request(server)
+                    .get(`${process.env.API_PREFIX}/bookings/${bookingType}?type=current`)
+                    .set('Authorization', `Bearer ${loginToken}`)
+                    .end((err, res) => {
+                        should.not.exist(err);
+                        res.should.have.status(200);
+                        done();
+                    });
+            });
+            it(`it should succeed listing ${bookingType} past bookings`, (done) => {
+                chai.request(server)
+                    .get(`${process.env.API_PREFIX}/bookings/${bookingType}?type=past`)
+                    .set('Authorization', `Bearer ${loginToken}`)
+                    .end((err, res) => {
+                        should.not.exist(err);
+                        res.should.have.status(200);
+                        done();
+                    });
+            });
             it(`it should fail listing ${bookingType} bookings of unsupported type`, (done) => {
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/bookings/${bookingType}/?type=unsupported`)
