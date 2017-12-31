@@ -195,7 +195,7 @@ describe('Users', () => {
                 .send({active: false})
                 .end((err, res) => {
                     should.exist(err);
-                    res.should.have.status(404);
+                    res.should.have.status(403);
                     done();
                 });
         });
