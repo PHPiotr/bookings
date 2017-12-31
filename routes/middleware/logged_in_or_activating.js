@@ -26,7 +26,7 @@ module.exports = (req, res, next) => {
                 }
             }
             if (!user) {
-                return res.handleError('User not found', 404, next);
+                return res.handleError('Token of user who does not exist', 403, next);
             }
             if (decoded.purpose === 'login' && !user.active) {
                 return res.handleError('User not active', 403, next);

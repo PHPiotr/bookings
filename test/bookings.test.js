@@ -254,6 +254,52 @@ describe('Bookings', () => {
                             });
                 });
             });
+
+            it(`it should fail listing someone else's ${bookingType} bookings`, (done) => {
+
+                let userIdOfSomeoneElse, loginTokenOfSomeoneElse;
+                const usernameOfSomeoneElse = `${username}of_someone_else`;
+
+                chai.request(server)
+                    .post(`${process.env.API_PREFIX}/users`)
+                    .send({
+                        suppressEmail: true,
+                        registration: {
+                            username: usernameOfSomeoneElse,
+                            password,
+                            email: 'hellosomeoneelse@example.com',
+                            repeatPassword: password,
+                        },
+                    })
+                    .end((err, res) => {
+                        const location = res.get('Location');
+                        const parts = location.split('/');
+                        chai.request(server)
+                            .get(`${process.env.API_PREFIX}/users/${parts[parts.length - 1]}`)
+                            .end((err, res) => {
+                                userIdOfSomeoneElse = res.body.id;
+                                loginTokenOfSomeoneElse = jwt.sign({
+                                    sub: userIdOfSomeoneElse,
+                                    purpose: 'login',
+                                }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
+                                chai.request(server)
+                                    .delete(`${process.env.API_PREFIX}/users/${usernameOfSomeoneElse}`)
+                                    .set('Authorization', `Bearer ${loginTokenOfSomeoneElse}`)
+                                    .end(() => {
+                                        chai.request(server)
+                                            .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                                            .set('Authorization', `Bearer ${loginTokenOfSomeoneElse}`)
+                                            .end((err, res) => {
+                                                should.exist(err);
+                                                res.should.have.status(403);
+                                                done();
+                                            });
+                                    });
+                            });
+                    });
+            });
+
+
             it(`it should fail creating ${bookingType} booking when no login token sent`, (done) => {
                 chai.request(server)
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
