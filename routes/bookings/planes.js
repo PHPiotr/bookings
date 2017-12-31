@@ -137,15 +137,7 @@ router.get('/', loggedIn, (req, res, next) => {
                             },
                         },
                     ],
-                    function (err, results) {
-                        if (err) {
-                            return next(err);
-                        }
-                        if (!results) {
-                            return next();
-                        }
-                        next(err, results);
-                    }
+                    (err, results) => next(err, results)
                 );
             },
             (next) => {
@@ -174,15 +166,7 @@ router.get('/', loggedIn, (req, res, next) => {
                             },
                         },
                     ],
-                    (err, results) => {
-                        if (err) {
-                            return next(err);
-                        }
-                        if (!results) {
-                            return next();
-                        }
-                        next(err, results[0]);
-                    }
+                    (err, results) => next(err, results[0])
                 );
             },
         ],
@@ -219,25 +203,9 @@ router.get('/:id', loggedIn, loadPlane, (req, res) => {
     res.json(res.plane);
 });
 
-router.put('/:id', loggedIn, loadPlane, (req, res) => {
-    const query = {_id: new ObjectId(res.plane.id)};
-    const update = {$set: req.body};
-    Plane.update(query, update, (err) => {
-        if (err) {
-            throw Error(err);
-        }
-        res.status(204).send();
-    });
-});
+router.put('/:id', loggedIn, loadPlane, (req, res) => Plane.update({_id: new ObjectId(res.plane.id)}, {$set: req.body}, () => res.status(204).send()));
 
-router.delete('/:id', loggedIn, loadPlane, (req, res) => {
-    Plane.remove({_id: new ObjectId(res.plane.id)}, (err) => {
-        if (err) {
-            throw Error(err);
-        }
-        res.status(204).send();
-    });
-});
+router.delete('/:id', loggedIn, loadPlane, (req, res) => Plane.remove({_id: new ObjectId(res.plane.id)}, () => res.status(204).send()));
 
 router.post('/', loggedIn, (req, res, next) => {
 
