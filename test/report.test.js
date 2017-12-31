@@ -13,7 +13,6 @@ describe('Report', () => {
     const username = '__hello__';
     const password = '__hello__';
     const body = {
-        suppressEmail: true,
         registration: {
             username,
             password,

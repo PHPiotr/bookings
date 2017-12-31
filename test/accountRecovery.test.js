@@ -15,7 +15,6 @@ describe('Account recovery', () => {
     const password = '__hello__';
     const email = 'hello@example.com';
     const body = {
-        suppressEmail: true,
         registration: {
             username,
             password,
@@ -128,7 +127,6 @@ describe('Account recovery', () => {
             .send({
                 email: 'hello@example.com',
                 recoveryUrl: 'http://example.com',
-                suppressEmail: true, // TODO: Find a way to mock sending emails properly
             })
             .end((err, res) => {
                 should.not.exist(err);

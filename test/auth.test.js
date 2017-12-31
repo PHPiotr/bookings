@@ -14,7 +14,6 @@ describe('Auth', () => {
     const password = '__hello__';
     const basic = new Buffer(username + ':' + password).toString('base64');
     const body = {
-        suppressEmail: true,
         registration: {
             username,
             password,
@@ -111,6 +110,17 @@ describe('Auth', () => {
             chai.request(server)
                 .get(`${process.env.API_PREFIX}/auth/login`)
                 .set('Authorization', 'Basic incorrect')
+                .end((err, res) => {
+                    should.exist(err);
+                    res.should.have.status(401);
+                    done();
+                });
+        });
+        it('it should fail logging user in when incorrect password', (done) => {
+            const wrongBasic = new Buffer(`${username}:wrong${password}`).toString('base64');
+            chai.request(server)
+                .get(`${process.env.API_PREFIX}/auth/login`)
+                .set('Authorization', `Basic ${wrongBasic}`)
                 .end((err, res) => {
                     should.exist(err);
                     res.should.have.status(401);

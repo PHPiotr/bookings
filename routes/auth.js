@@ -18,24 +18,16 @@ router.get('/login', (req, res, next) => {
         return fail(res, 'Username/password combination does not match', 401);
     }
 
-    User.findOne({
-        username: username,
-    }, (err, user) => {
-        if (err) {
-            return next(err);
-        }
+    User.findOne({username: username}, (err, user) => {
         if (!user) {
             return fail(res, 'Username/password combination does not match', 401);
         }
         user.comparePassword(password, user.password, (err, isMatch) => {
-            if (err) {
-                return next(err);
-            }
             if (!isMatch) {
                 return fail(res, 'Username/password combination does not match', 401);
             }
             if (!user.active) {
-                return res.status(403).json({success: false, msg: 'Account not active'});
+                return res.handleError('Account not active', 403, next);
             }
             const expiresIn = process.env.EXPIRES_IN;
             const token = jwt.sign({sub: user._id, purpose: 'login'}, process.env.AUTH_SECRET, {
@@ -58,9 +50,6 @@ router.post('/account-recovery', (req, res, next) => {
         return res.handleError('Email address not valid', 403, next);
     }
     User.findOne({email: recoveryEmail}, (err, user) => {
-        if (err) {
-            return res.handleError(`${err.name}: ${err.message}`, 403, next);
-        }
         if (!user) {
             // Do not allow checking if email exists or not
             return res.status(201).send();
@@ -98,14 +87,7 @@ router.post('/account-recovery', (req, res, next) => {
             body: mail.toJSON(),
         });
 
-        sg.API(request, (err) => {
-            if (err) {
-                if (!req.body.suppressEmail) {
-                    return res.handleError(err.message, 403, next);
-                }
-            }
-            return res.status(201).send();
-        });
+        sg.API(request, () => res.status(201).send());
     });
 });
 

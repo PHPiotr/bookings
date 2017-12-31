@@ -11,7 +11,6 @@ const bcrypt = require('bcrypt-nodejs');
 
 router.post('/', (req, res, next) => {
     const user = req.body.registration;
-    const sendActivationEmail = !req.body.suppressEmail;
 
     user.active = false;
     if (user.password !== user.repeatPassword) {
@@ -19,40 +18,32 @@ router.post('/', (req, res, next) => {
     }
     User.create(user, (err, created) => {
         if (!err) {
+            const activationUrl = req.body.activationUrl;
+            const appName = req.body.appName;
+            const activationFromEmail = req.body.activationFromEmail;
+            const token = jwt.sign({
+                sub: created._id,
+                purpose: 'activation',
+            }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
 
-            if (sendActivationEmail) {
+            const helper = sendgrid.mail;
+            const fromEmail = new helper.Email(activationFromEmail, appName);
+            const toEmail = new helper.Email(created.email);
+            const subject = `[${appName}] Activate your account`;
+            const link = `${activationUrl}/${created._id}/${token}`;
+            const content = new helper.Content(
+                'text/html',
+                `Hello ${created.username}! Click the following link in order to activate your account: <a href="${link}">${link}</a>`);
+            const mail = new helper.Mail(fromEmail, subject, toEmail, content);
 
-                const activationUrl = req.body.activationUrl;
-                const appName = req.body.appName;
-                const activationFromEmail = req.body.activationFromEmail;
-                const token = jwt.sign({
-                    sub: created._id,
-                    purpose: 'activation',
-                }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
+            const sg = sendgrid(process.env.SENDGRID_API_KEY);
+            const request = sg.emptyRequest({
+                method: 'POST',
+                path: '/v3/mail/send',
+                body: mail.toJSON(),
+            });
 
-                const helper = sendgrid.mail;
-                const fromEmail = new helper.Email(activationFromEmail, appName);
-                const toEmail = new helper.Email(created.email);
-                const subject = `[${appName}] Activate your account`;
-                const link = `${activationUrl}/${created._id}/${token}`;
-                const content = new helper.Content(
-                    'text/html',
-                    `Hello ${created.username}! Click the following link in order to activate your account: <a href="${link}">${link}</a>`);
-                const mail = new helper.Mail(fromEmail, subject, toEmail, content);
-
-                const sg = sendgrid(process.env.SENDGRID_API_KEY);
-                const request = sg.emptyRequest({
-                    method: 'POST',
-                    path: '/v3/mail/send',
-                    body: mail.toJSON(),
-                });
-
-                sg.API(request, (error) => {
-                    if (error) {
-                        throw Error(error);
-                    }
-                });
-            }
+            sg.API(request, () => null);
 
             res.setHeader('Location', `${req.protocol}://${req.get('host')}${process.env.API_PREFIX}/users/${created.username}`);
 
