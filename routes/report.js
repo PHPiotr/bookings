@@ -74,18 +74,7 @@ router.get('/', loggedIn, validateDates, (req, res) => {
                             },
                         },
                     ],
-                    (err, results) => {
-                        if (err) {
-                            return next(err);
-                        }
-                        if (!results) {
-                            return next(err, defaultResults);
-                        }
-                        if (undefined === results[0]) {
-                            return next(err, defaultResults);
-                        }
-                        next(err, results[0]);
-                    }
+                    (err, results) => next(err, (results && results[0]) ? results[0] : defaultResults)
                 );
             },
             (next) => {
@@ -111,18 +100,7 @@ router.get('/', loggedIn, validateDates, (req, res) => {
                             },
                         },
                     ],
-                    (err, results) => {
-                        if (err) {
-                            return next(err);
-                        }
-                        if (!results) {
-                            return next(err, defaultResults);
-                        }
-                        if (undefined === results[0]) {
-                            return next(err, defaultResults);
-                        }
-                        next(err, results[0]);
-                    }
+                    (err, results) => next(err, (results && results[0]) ? results[0] : defaultResults)
                 );
             },
             (next) => {
@@ -148,18 +126,7 @@ router.get('/', loggedIn, validateDates, (req, res) => {
                             },
                         },
                     ],
-                    (err, results) => {
-                        if (err) {
-                            return next(err);
-                        }
-                        if (!results) {
-                            return next(err, defaultResults);
-                        }
-                        if (undefined === results[0]) {
-                            return next(err, defaultResults);
-                        }
-                        next(err, results[0]);
-                    }
+                    (err, results) => next(err, (results && results[0]) ? results[0] : defaultResults)
                 );
             },
             (next) => {
@@ -176,18 +143,7 @@ router.get('/', loggedIn, validateDates, (req, res) => {
                             },
                         },
                     ],
-                    (err, results) => {
-                        if (err) {
-                            return next(err);
-                        }
-                        if (!results) {
-                            return next(err, defaultResults);
-                        }
-                        if (undefined === results[0]) {
-                            return next(err, defaultResults);
-                        }
-                        next(err, results[0]);
-                    }
+                    (err, results) => next(err, (results && results[0]) ? results[0] : defaultResults)
                 );
             },
         ],
