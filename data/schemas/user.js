@@ -53,10 +53,6 @@ UserSchema.pre('save', function (next) {
     }
     that.meta.updated_at = Date.now;
 
-    if (!this.isModified('password')) {
-        return next();
-    }
-
     bcrypt.hash(that.password, null, null, (err, hash) => {
         that.password = hash;
         next(err);

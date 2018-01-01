@@ -184,6 +184,22 @@ describe('Users', () => {
                     done();
                 });
         });
+        it('it should succeed editing user', (done) => {
+            chai.request(server)
+                .put(`${process.env.API_PREFIX}/users/${userId}`)
+                .set('Authorization', `Bearer ${activationToken}`)
+                .end(() => {
+                    chai.request(server)
+                        .put(`${process.env.API_PREFIX}/users/${userId}`)
+                        .set('Authorization', `Bearer ${loginToken}`)
+                        .send({active: false})
+                        .end((err, res) => {
+                            should.not.exist(err);
+                            res.should.have.status(204);
+                            done();
+                        });
+                });
+        });
         it('it should fail editing user who does not exist', (done) => {
             chai.request(server)
                 .put(`${process.env.API_PREFIX}/users/${userIdWhoDoesNotExist}`)
