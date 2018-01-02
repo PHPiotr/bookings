@@ -9,6 +9,12 @@ const server = app.server;
 chai.use(chaiHttp);
 
 const bookingTypes = ['buses', 'planes', 'trains', 'hostels'];
+const pluralToSingularMapping = {
+    buses: 'bus',
+    planes: 'flight',
+    trains: 'train',
+    hostels: 'hostel',
+};
 const bookings = {
     buses: {
         booking_number: '__unique__',
@@ -250,6 +256,36 @@ describe('Bookings', () => {
                                 should.not.exist(viewErr);
                                 viewRes.should.have.status(204);
                                 done();
+                            });
+                    });
+            });
+            it(`it should succeed editing ${bookingType} booking but \`created at\` date should not be updated`, (done) => {
+                let createdAt;
+                chai.request(server)
+                    .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                    .send(bookings[bookingType])
+                    .set('Authorization', `Bearer ${loginToken}`)
+                    .end((err, res) => {
+                        const location = res.get('Location');
+                        const parts = location.split('/');
+                        const bookingId = parts[parts.length - 1];
+                        bookingsIds[bookingType] = bookingId;
+
+                        const Model = require(`../data/models/${pluralToSingularMapping[bookingType]}`);
+                        Model.findOne({_id: bookingId})
+                            .exec((err, booking) => {
+                                createdAt = booking.meta.created_at;
+                                chai.request(server)
+                                    .put(`${process.env.API_PREFIX}/bookings/${bookingType}/${bookingId}`)
+                                    .send({price: 99.99, meta: {created_at: Date.now()}})
+                                    .set('Authorization', `Bearer ${loginToken}`)
+                                    .end(() => {
+                                        Model.findOne({_id: bookingId})
+                                            .exec((err, checkBooking) => {
+                                                checkBooking.meta.created_at.toLocaleTimeString().should.equal(createdAt.toLocaleTimeString());
+                                                done();
+                                            });
+                                    });
                             });
                     });
             });
