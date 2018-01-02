@@ -68,7 +68,6 @@ const FlightSchema = new Schema({
         created_at: {
             type: Date,
             'default': Date.now,
-            set: () => undefined,
         },
         timezone_offset: {
             type: String,

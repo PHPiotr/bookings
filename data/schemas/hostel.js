@@ -40,7 +40,6 @@ const HostelSchema = new Schema({
         created_at: {
             type: Date,
             'default': Date.now,
-            set: () => undefined,
         },
         updated_at: {
             type: Date,
