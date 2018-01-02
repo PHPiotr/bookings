@@ -29,28 +29,11 @@ const UserSchema = new mongoose.Schema({
         },
     },
 });
-UserSchema
-    .virtual('full_name')
-    .get(() => {
-        if (typeof this.name === 'string') {
-            return this.name;
-        }
-        return [this.name.first, this.name.last].join(' ');
-    })
-    .set((fullName) => {
-        const nameComponents = fullName.split(' ');
-        this.name = {
-            last: nameComponents.pop(),
-            first: nameComponents.join(' '),
-        };
-    });
 UserSchema.pre('save', function (next) {
 
     const that = this;
 
-    if (that.isNew) {
-        that.meta.created_at = Date.now;
-    }
+    that.meta.created_at = Date.now;
     that.meta.updated_at = Date.now;
 
     bcrypt.hash(that.password, null, null, (err, hash) => {
