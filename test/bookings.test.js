@@ -10,10 +10,10 @@ chai.use(chaiHttp);
 
 const bookingTypes = ['buses', 'planes', 'trains', 'hostels'];
 const pluralToSingularMapping = {
-    buses: 'Bus',
-    planes: 'Flight',
-    trains: 'Train',
-    hostels: 'Hostel',
+    buses: 'bus',
+    planes: 'flight',
+    trains: 'train',
+    hostels: 'hostel',
 };
 const bookings = {
     buses: {
