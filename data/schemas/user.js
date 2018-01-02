@@ -53,24 +53,14 @@ UserSchema.pre('save', function (next) {
     }
     that.meta.updated_at = Date.now;
 
-    if (!this.isModified('password')) {
-        return next();
-    }
-
     bcrypt.hash(that.password, null, null, (err, hash) => {
-        if (err) {
-            return next(err);
-        }
         that.password = hash;
-        next();
+        next(err);
     });
 });
 UserSchema.methods.comparePassword = (plainPassword, encryptedPassword, callback) => {
     bcrypt.compare(plainPassword, encryptedPassword, (err, isMatch) => {
-        if (err) {
-            return callback(err);
-        }
-        callback(null, isMatch);
+        callback(err, isMatch);
     });
 };
 
