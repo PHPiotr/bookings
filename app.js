@@ -17,7 +17,7 @@ const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const api_prefix = process.env.API_PREFIX;
 const handleError = (msg, code, next) => {
-    const err = new Error(msg);
+    const err = typeof msg === 'object' ? msg : new Error(msg);
     err.status = code;
     return next(err);
 };
@@ -48,10 +48,7 @@ app.use((err, req, res, next) => {
     const code = errorBody.code || err.status || 500;
     const message = errorBody.message || err.message || 'Something went wrong';
     res.statusMessage = message;
-    res.status(code).json({
-        message: message,
-        code: code,
-    });
+    res.status(code).json({message, code, err});
     next();
 });
 
