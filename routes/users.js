@@ -51,8 +51,7 @@ router.post('/', (req, res, next) => {
         }
 
         if (err.name === 'ValidationError') {
-            err.message = err._message;
-            return res.handleError(err, 422, next);
+            return res.status(422).json({error: err._message, errors: err.errors});
         }
         if (err.code == 11000) {
             return res.handleError('Such user already exists', 409, next);
