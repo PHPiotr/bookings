@@ -29,6 +29,23 @@ const UserSchema = new mongoose.Schema({
         },
     },
 });
+
+UserSchema.virtual('repeatPassword')
+    .get(function() {
+        return this._repeatPassword;
+    })
+    .set(function(value) {
+        this._repeatPassword = value;
+    });
+
+UserSchema.path('password').validate(function(password) {
+    if (password || this._repeatPassword) {
+        if (password !== this._repeatPassword) {
+            this.invalidate('repeatPassword', 'Password must be confirmed');
+        }
+    }
+}, null);
+
 UserSchema.pre('save', function (next) {
 
     const that = this;
