@@ -1,18 +1,20 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt-nodejs');
-const emailRegexp = /.+@.+\..+/;
 
 mongoose.Promise = require('bluebird');
 
 const UserSchema = new mongoose.Schema({
-    username: {type: String, required: true, unique: true},
+    username: {type: String, required: [true, 'required field'], unique: true},
     name: mongoose.Schema.Types.Mixed,
-    password: {type: String, required: true},
+    password: {type: String, required: [true, 'required field']},
     email: {
         type: String,
-        required: true,
+        required: [true, 'required field'],
         unique: true,
-        match: emailRegexp,
+        validate: {
+            validator: v => /.+@.+\..+/.test(v),
+            message: 'invalid format'
+        },
     },
     active: {
         type: Boolean,
@@ -41,7 +43,11 @@ UserSchema.virtual('repeatPassword')
 UserSchema.path('password').validate(function(password) {
     if (password || this._repeatPassword) {
         if (password !== this._repeatPassword) {
-            this.invalidate('repeatPassword', 'Password must be confirmed');
+            if (!this._repeatPassword) {
+                this.invalidate('repeatPassword', 'required field');
+            } else {
+                this.invalidate('repeatPassword', 'must match');
+            }
         }
     }
 }, null);
