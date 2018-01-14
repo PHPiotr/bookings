@@ -4,10 +4,21 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const sendgrid = require('sendgrid');
 
-const fail = (res, msg, code) => {
+const fail = (res, body, code) => {
     res.set('WWW-Authenticate', 'Basic realm="Access to bookings"');
-    res.status(code).json({success: false, msg: msg});
+    res.status(code).json(body);
 };
+
+const error = 'Username / password combination does not match';
+
+const getErrors = (usernameMessage = '', passwordMessage = '') => ({
+    username: {
+        message: usernameMessage,
+    },
+    password: {
+        message: passwordMessage,
+    },
+});
 
 router.get('/login', (req, res, next) => {
 
@@ -15,19 +26,35 @@ router.get('/login', (req, res, next) => {
     const [username, password] = new Buffer(b64auth, 'base64').toString().split(':');
 
     if (!username || !password) {
-        return fail(res, 'Username/password combination does not match', 401);
+        return fail(res, {
+            success: false,
+            error,
+            errors: getErrors(!username ? 'required field' : '', !password ? 'required field' : ''),
+        }, 401);
     }
 
     User.findOne({username: username}, (err, user) => {
         if (!user) {
-            return fail(res, 'Username/password combination does not match', 401);
+            return fail(res, {
+                success: false,
+                error,
+                errors: getErrors('incorrect value', ''),
+            }, 401);
         }
         user.comparePassword(password, user.password, (err, isMatch) => {
             if (!isMatch) {
-                return fail(res, 'Username/password combination does not match', 401);
+                return fail(res, {
+                    success: false,
+                    error,
+                    errors: getErrors('', 'incorrect value'),
+                }, 401);
             }
             if (!user.active) {
-                return res.handleError('Account not active', 403, next);
+                return res.handleError({
+                    success: false,
+                    error: 'Account not active',
+                    errors: getErrors('', ''),
+                }, 403, next);
             }
             const expiresIn = process.env.EXPIRES_IN;
             const token = jwt.sign({sub: user._id, purpose: 'login'}, process.env.AUTH_SECRET, {
