@@ -3,27 +3,27 @@ const FlightSchema = new Schema({
     confirmation_code: {
         type: String,
         unique: true,
-        required: true,
+        required: [true, 'required field'],
     },
     from: {
         type: String,
-        required: true,
+        required: [true, 'required field'],
     },
     to: {
         type: String,
-        required: true,
+        required: [true, 'required field'],
     },
     departure_date: {
         type: Date,
-        required: true,
+        required: [true, 'required field'],
     },
     departure_time: {
         type: String,
-        required: true,
+        required: [true, 'required field'],
     },
     arrival_time: {
         type: String,
-        required: true,
+        required: [true, 'required field'],
     },
     seat: {
         type: String,
@@ -48,7 +48,7 @@ const FlightSchema = new Schema({
         type: Number,
         get: number => parseFloat(number).toFixed(2),
         set: number => parseFloat(number).toFixed(2),
-        required: true,
+        required: [true, 'required field'],
     },
     currency: {
         type: String,
@@ -62,7 +62,7 @@ const FlightSchema = new Schema({
     created_by: {
         type: Schema.ObjectId,
         ref: 'User',
-        required: true,
+        required: [true, 'required field'],
     },
     meta: {
         created_at: {

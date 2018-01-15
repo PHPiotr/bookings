@@ -2,15 +2,15 @@ const Schema = require('mongoose').Schema;
 const TrainSchema = new Schema({
     from: {
         type: String,
-        required: true,
+        required: [true, 'required field'],
     },
     to: {
         type: String,
-        required: true,
+        required: [true, 'required field'],
     },
     departure_date: {
         type: Date,
-        required: true,
+        required: [true, 'required field'],
     },
     departure_time: {
         type: String,
@@ -41,7 +41,7 @@ const TrainSchema = new Schema({
         type: Number,
         get: number => parseFloat(number).toFixed(2),
         set: number => parseFloat(number).toFixed(2),
-        required: true,
+        required: [true, 'required field'],
     },
     currency: {
         type: String,
@@ -55,7 +55,7 @@ const TrainSchema = new Schema({
     created_by: {
         type: Schema.ObjectId,
         ref: 'User',
-        required: true,
+        required: [true, 'required field'],
     },
     meta: {
         created_at: {
