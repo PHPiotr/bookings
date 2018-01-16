@@ -80,4 +80,16 @@ const FlightSchema = new Schema({
     },
 });
 
+FlightSchema.path('is_return').validate(function(value) {
+    if (!value) {
+        return;
+    }
+    if (!this.return_departure_date) {
+        this.invalidate('return_departure_date', 'required field');
+    }
+    if (!this.return_departure_time) {
+        this.invalidate('return_departure_time', 'required field');
+    }
+}, null);
+
 module.exports = FlightSchema;
