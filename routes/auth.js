@@ -71,10 +71,10 @@ router.get('/login', (req, res, next) => {
 router.post('/account-recovery', (req, res, next) => {
     const recoveryEmail = req.body && req.body.email && req.body.email.toString().trim();
     if (!recoveryEmail) {
-        return res.handleError('Email address not provided', 403, next);
+        return res.handleError('required field', 403, next);
     }
     if (!recoveryEmail.match(/.+@.+\..+/)) {
-        return res.handleError('Email address not valid', 403, next);
+        return res.handleError('invalid format', 403, next);
     }
     User.findOne({email: recoveryEmail}, (err, user) => {
         if (!user) {
