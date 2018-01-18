@@ -41,13 +41,11 @@ UserSchema.virtual('repeatPassword')
     });
 
 UserSchema.path('password').validate(function(password) {
-    if (password || this._repeatPassword) {
+    if (!this._repeatPassword) {
+        this.invalidate('repeatPassword', 'required field');
+    } else {
         if (password !== this._repeatPassword) {
-            if (!this._repeatPassword) {
-                this.invalidate('repeatPassword', 'required field');
-            } else {
-                this.invalidate('repeatPassword', 'must match');
-            }
+            this.invalidate('repeatPassword', 'must match');
         }
     }
 }, null);
