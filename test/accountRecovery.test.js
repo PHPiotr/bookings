@@ -12,7 +12,7 @@ chai.use(chaiHttp);
 describe('Account recovery', () => {
 
     const username = '__hello__';
-    const password = '__hello__';
+    const password = '__1Hello@__';
     const email = 'hello@example.com';
     const body = {
         registration: {

@@ -55,7 +55,7 @@ const bookingsIds = {
 };
 
 const username = '__hello__';
-const password = '__hello__';
+const password = '__1Hello@__';
 const body = {
     registration: {
         username,
