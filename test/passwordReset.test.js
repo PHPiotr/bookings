@@ -12,9 +12,9 @@ describe('Password reset', () => {
 
     const username = '__hello__';
     const username2 = '__hello2__';
-    const password = '__hello__';
-    const newPassword = '__world__';
-    const newPasswordRepeat = '__world__';
+    const password = '__1Hello@__';
+    const newPassword = '__1World@__';
+    const newPasswordRepeat = '__1World@__';
     const email = 'hello@example.com';
     const email2 = 'hello2@example.com';
     const body = {

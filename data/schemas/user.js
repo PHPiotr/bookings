@@ -41,13 +41,17 @@ UserSchema.virtual('repeatPassword')
     });
 
 UserSchema.path('password').validate(function(password) {
-    if (password || this._repeatPassword) {
+    if (password) {
+        const pattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+        if (!pattern.test(password)) {
+            this.invalidate('password', 'must contain at least 8 characters, at least 1 uppercase letter, at least 1 lowercase letter, and at least 1 number');
+        }
+    }
+    if (!this._repeatPassword) {
+        this.invalidate('repeatPassword', 'required field');
+    } else {
         if (password !== this._repeatPassword) {
-            if (!this._repeatPassword) {
-                this.invalidate('repeatPassword', 'required field');
-            } else {
-                this.invalidate('repeatPassword', 'must match');
-            }
+            this.invalidate('repeatPassword', 'must match with password');
         }
     }
 }, null);

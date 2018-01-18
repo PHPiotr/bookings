@@ -11,7 +11,7 @@ chai.use(chaiHttp);
 describe('Auth', () => {
 
     const username = '__hello__';
-    const password = '__hello__';
+    const password = '__1Hello@__';
     const basic = new Buffer(username + ':' + password).toString('base64');
     const body = {
         registration: {
