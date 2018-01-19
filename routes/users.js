@@ -7,7 +7,6 @@ const router = express.Router();
 const ObjectId = require('mongoose').Types.ObjectId;
 const jwt = require('jsonwebtoken');
 const sendgrid = require('sendgrid');
-const bcrypt = require('bcrypt-nodejs');
 
 router.post('/', (req, res, next) => {
     const user = req.body.registration;
@@ -70,17 +69,8 @@ router.patch('/:id', (req, res, next) => {
     }
 
     const {newPassword, newPasswordRepeat} = req.body;
-    if (newPassword !== newPasswordRepeat) {
-        return res.handleError('Passwords did not match', 403, next);
-    }
-    if (typeof newPassword !== 'string') {
-        return res.handleError('Password must be a string', 403, next);
-    }
-    if (!newPassword.trim()) {
-        return res.handleError('Password not provided', 403, next);
-    }
 
-    User.findOne({_id: req.params.id}, (err, user) => {
+    User.findById(req.params.id, function(err, user) {
         if (!user) {
             return res.handleError('No such user', 404, next);
         }
@@ -88,8 +78,12 @@ router.patch('/:id', (req, res, next) => {
             if (err) {
                 return res.handleError(`${err.name}: ${err.message}`, 403, next);
             }
-            bcrypt.hash(newPassword, null, null, (err, hash) => {
-                User.update({_id: new ObjectId(req.params.id)}, {$set: {password: hash}}, () => res.status(204).send());
+            user.set({ password: newPassword, repeatPassword: newPasswordRepeat});
+            user.save(function (err) {
+                if (err) {
+                    return res.handleError(`${err.name}: ${err.message}`, 403, next);
+                }
+                res.status(204).send();
             });
         });
     });

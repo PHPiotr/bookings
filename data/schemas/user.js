@@ -60,7 +60,9 @@ UserSchema.pre('save', function (next) {
 
     const that = this;
 
-    that.meta.created_at = Date.now;
+    if (this.isNew) {
+        that.meta.created_at = Date.now;
+    }
     that.meta.updated_at = Date.now;
 
     bcrypt.hash(that.password, null, null, (err, hash) => {
