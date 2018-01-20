@@ -81,7 +81,10 @@ router.patch('/:id', (req, res, next) => {
             user.set({ password: newPassword, repeatPassword: newPasswordRepeat});
             user.save(function (err) {
                 if (err) {
-                    return res.handleError(`${err.name}: ${err.message}`, 403, next);
+                    if (err.name === 'ValidationError') {
+                        err.message = err._message;
+                    }
+                    return res.handleError(err, 403, next);
                 }
                 res.status(204).send();
             });
