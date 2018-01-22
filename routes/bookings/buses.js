@@ -159,7 +159,18 @@ router.get('/:id', loggedIn, loadBus, (req, res) => {
     res.json(res.bus);
 });
 
-router.put('/:id', loggedIn, loadBus, (req, res) => Bus.update({_id: new ObjectId(res.bus._id)}, {$set: req.body}, () => res.status(204).send()));
+router.put('/:id', loggedIn, loadBus, (req, res, next) => {
+    res.bus.set(req.body);
+    res.bus.save(function (err) {
+        if (err) {
+            if (err.name === 'ValidationError') {
+                err.message = err._message;
+            }
+            return res.handleError(err, 403, next);
+        }
+        res.status(204).send();
+    });
+});
 
 router.delete('/:id', loggedIn, loadBus, (req, res) => Bus.remove({_id: new ObjectId(res.bus._id)}, () => res.status(204).send()));
 
