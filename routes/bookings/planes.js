@@ -198,7 +198,18 @@ router.get('/:id', loggedIn, loadPlane, (req, res) => {
     res.json(res.plane);
 });
 
-router.put('/:id', loggedIn, loadPlane, (req, res) => Plane.update({_id: new ObjectId(res.plane.id)}, {$set: req.body}, () => res.status(204).send()));
+router.put('/:id', loggedIn, loadPlane, (req, res) => {
+    res.plane.set(req.body);
+    res.plane.save(function (err) {
+        if (err) {
+            if (err.name === 'ValidationError') {
+                err.message = err._message;
+            }
+            return res.handleError(err, 403, next);
+        }
+        res.status(204).send();
+    });
+});
 
 router.delete('/:id', loggedIn, loadPlane, (req, res) => Plane.remove({_id: new ObjectId(res.plane.id)}, () => res.status(204).send()));
 
