@@ -161,7 +161,7 @@ router.get('/:id', loggedIn, loadTrain, (req, res) => {
     res.json(res.train);
 });
 
-router.put('/:id', loggedIn, loadTrain, (req, res) => {
+router.put('/:id', loggedIn, loadTrain, (req, res, next) => {
     res.train.set(req.body);
     res.train.save(function (err) {
         if (err) {

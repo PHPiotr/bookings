@@ -198,7 +198,7 @@ router.get('/:id', loggedIn, loadPlane, (req, res) => {
     res.json(res.plane);
 });
 
-router.put('/:id', loggedIn, loadPlane, (req, res) => {
+router.put('/:id', loggedIn, loadPlane, (req, res, next) => {
     res.plane.set(req.body);
     res.plane.save(function (err) {
         if (err) {

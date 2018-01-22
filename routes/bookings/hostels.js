@@ -141,7 +141,7 @@ router.get('/:id', loggedIn, loadHostel, (req, res) => {
     res.json(res.hostel);
 });
 
-router.put('/:id', loggedIn, loadHostel, (req, res) => {
+router.put('/:id', loggedIn, loadHostel, (req, res, next) => {
     res.hostel.set(req.body);
     res.hostel.save(function (err) {
         if (err) {
