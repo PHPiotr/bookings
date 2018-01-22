@@ -161,7 +161,18 @@ router.get('/:id', loggedIn, loadTrain, (req, res) => {
     res.json(res.train);
 });
 
-router.put('/:id', loggedIn, loadTrain, (req, res) => Train.update({_id: new ObjectId(res.train._id)}, {$set: req.body}, () => res.status(204).send()));
+router.put('/:id', loggedIn, loadTrain, (req, res) => {
+    res.train.set(req.body);
+    res.train.save(function (err) {
+        if (err) {
+            if (err.name === 'ValidationError') {
+                err.message = err._message;
+            }
+            return res.handleError(err, 403, next);
+        }
+        res.status(204).send();
+    });
+});
 
 router.delete('/:id', loggedIn, loadTrain, (req, res) => Train.remove({_id: new ObjectId(res.train._id)}, () => res.status(204).send()));
 
