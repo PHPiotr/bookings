@@ -230,7 +230,7 @@ describe('Bookings', () => {
             it(`it should fail creating ${bookingType} booking when invalid input`, (done) => {
                 chai.request(server)
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
-                    .send(Object.assign({}, bookings[bookingType], {price: 'invalid input'}))
+                    .send(Object.assign({}, bookings[bookingType], {price: 'invalid input', is_return: true}))
                     .set('Authorization', `Bearer ${loginToken}`)
                     .end((err, res) => {
                         should.exist(err);
