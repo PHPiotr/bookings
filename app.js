@@ -52,8 +52,6 @@ app.use((err, req, res, next) => {
     next();
 });
 
-mongoose.connect(process.env.MONGODB_URI, {
-    useMongoClient: true,
-});
+mongoose.connect(process.env.MONGODB_URI);
 
 module.exports = {app: app, server: server};
