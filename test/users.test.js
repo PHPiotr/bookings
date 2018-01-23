@@ -140,6 +140,27 @@ describe('Users', () => {
                         });
                 });
         });
+        it('it should fail creating user when password not repeated', (done) => {
+            chai.request(server)
+                .delete(`${process.env.API_PREFIX}/users/${body.login}`)
+                .set('Authorization', `Bearer ${loginToken}`)
+                .end(() => {
+                    chai.request(server).post(`${process.env.API_PREFIX}/users`)
+                        .send({
+                            registration: {
+                                username,
+                                password,
+                                email: 'hello@example.com',
+                                repeatPassword: '',
+                            },
+                        })
+                        .end((err, res) => {
+                            should.exist(err);
+                            res.should.have.status(422);
+                            done();
+                        });
+                });
+        });
         it('it should fail creating user when email not valid', (done) => {
             chai.request(server)
                 .delete(`${process.env.API_PREFIX}/users/${body.login}`)
