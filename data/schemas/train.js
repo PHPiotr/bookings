@@ -78,4 +78,12 @@ TrainSchema.path('is_return').validate(function(value) {
     }
 }, null);
 
+TrainSchema.path('to').validate(function(to) {
+    if (to) {
+        if (to === this.from) {
+            this.invalidate('to', 'must be different');
+        }
+    }
+});
+
 module.exports = TrainSchema;
