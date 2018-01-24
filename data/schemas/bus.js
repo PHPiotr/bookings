@@ -75,6 +75,14 @@ const BusSchema = new Schema({
     },
 });
 
+BusSchema.path('to').validate(function(to) {
+    if (to) {
+        if (to === this.from) {
+            this.invalidate('to', 'must be different');
+        }
+    }
+});
+
 BusSchema.path('is_return').validate(function(value) {
     if (!value) {
         return;
