@@ -176,6 +176,17 @@ describe('Password reset', () => {
                 done();
             });
     });
+    it('it should fail resetting password when passwords too short', (done) => {
+        chai.request(server)
+            .patch(`${process.env.API_PREFIX}/users/${userId}`)
+            .set('Authorization', `Bearer ${passwordResetToken}`)
+            .send({newPassword: 'short', newPasswordRepeat: 'short'})
+            .end((err, res) => {
+                should.exist(err);
+                res.should.have.status(403);
+                done();
+            });
+    });
     it('it should fail resetting password when password is empty string', (done) => {
         chai.request(server)
             .patch(`${process.env.API_PREFIX}/users/${userId}`)
