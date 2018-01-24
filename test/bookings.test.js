@@ -199,21 +199,19 @@ describe('Bookings', () => {
                             });
                     });
             });
-            it(`it should fail creating ${bookingType} booking when 'from' the same as 'to' is`, (done) => {
-                chai.request(server)
-                    .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
-                    .send(Object.assign({}, bookings[bookingType], {from: 'London', to: 'London'}))
-                    .set('Authorization', `Bearer ${loginToken}`)
-                    .end((err, res) => {
-                        if (bookingType === 'hostels') {
-                            done();
-                        } else {
+            if (bookingType !== 'hostels') {
+                it(`it should fail creating ${bookingType} booking when 'from' the same as 'to' is`, (done) => {
+                    chai.request(server)
+                        .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                        .send(Object.assign({}, bookings[bookingType], {from: 'London', to: 'London'}))
+                        .set('Authorization', `Bearer ${loginToken}`)
+                        .end((err, res) => {
                             should.exist(err);
                             res.should.have.status(403);
                             done();
-                        }
-                    });
-            });
+                        });
+                });
+            }
             it(`it should fail creating ${bookingType} booking which already exists`, (done) => {
                 if (bookingType === 'trains') {
                     // Train has no unique fields
