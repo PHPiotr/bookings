@@ -202,7 +202,6 @@ describe('Bookings', () => {
             it(`it should fail creating ${bookingType} booking when 'from' the same as 'to' is`, (done) => {
                 chai.request(server)
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
-                    .send(bookings[bookingType])
                     .send(Object.assign({}, bookings[bookingType], {from: 'London', to: 'London'}))
                     .set('Authorization', `Bearer ${loginToken}`)
                     .end((err, res) => {
