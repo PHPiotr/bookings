@@ -205,7 +205,7 @@ describe('Bookings', () => {
                     .send(Object.assign({}, bookings[bookingType], {from: 'London', to: 'London'}))
                     .set('Authorization', `Bearer ${loginToken}`)
                     .end((err, res) => {
-                        if (bookingType === 'hostel') {
+                        if (bookingType === 'hostels') {
                             done();
                         } else {
                             should.exist(err);
