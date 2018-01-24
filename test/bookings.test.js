@@ -304,6 +304,27 @@ describe('Bookings', () => {
                             });
                     });
             });
+            it(`it should fail editing ${bookingType} booking when validation fails`, (done) => {
+                chai.request(server)
+                    .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                    .send(bookings[bookingType])
+                    .set('Authorization', `Bearer ${loginToken}`)
+                    .end((err, res) => {
+                        const location = res.get('Location');
+                        const parts = location.split('/');
+                        const bookingId = parts[parts.length - 1];
+                        bookingsIds[bookingType] = bookingId;
+                        chai.request(server)
+                            .put(`${process.env.API_PREFIX}/bookings/${bookingType}/${bookingId}`)
+                            .send({price: 'wrong'})
+                            .set('Authorization', `Bearer ${loginToken}`)
+                            .end((viewErr, viewRes) => {
+                                should.exist(viewErr);
+                                viewRes.should.have.status(403);
+                                done();
+                            });
+                    });
+            });
             it(`it should fail viewing someone else's ${bookingType} booking`, (done) => {
 
                 let userIdOfSomeoneElse, loginTokenOfSomeoneElse, activationTokenOfSomeoneElse;
