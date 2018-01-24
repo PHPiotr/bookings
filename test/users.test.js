@@ -27,6 +27,7 @@ describe('Users', () => {
     let loginToken;
     let loginTokenOfUserWhodoesNotExist;
     let activationToken;
+    let passwordResetToken;
 
     const cleanup = (done) => {
         chai.request(server)
@@ -44,6 +45,10 @@ describe('Users', () => {
                     sub: body.id,
                     purpose: 'login',
                 }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
+                passwordResetToken = jwt.sign({
+                    sub: body.id,
+                    purpose: 'login',
+                }, `${process.env.AUTH_SECRET}${password}`, {algorithm: 'HS256'});
                 loginTokenOfUserWhodoesNotExist = jwt.sign({
                     sub: userIdWhoDoesNotExist,
                     purpose: 'login',
@@ -364,6 +369,20 @@ describe('Users', () => {
                                     done();
                                 });
                         });
+                });
+        });
+    });
+
+    describe('Password reset', () => {
+        it('it should fail resetting password when validation fails', (done) => {
+            chai.request(server)
+                .patch(`${process.env.API_PREFIX}/users/${userId}`)
+                .send({newPassword: 'too', newPasswordRepeat: 'short'})
+                .set('Authorization', `Bearer ${passwordResetToken}`)
+                .end((err, res) => {
+                    should.exist(err);
+                    res.should.have.status(403);
+                    done();
                 });
         });
     });
