@@ -48,4 +48,12 @@ const HostelSchema = new Schema({
     },
 });
 
+HostelSchema.path('checkout_date').validate(function(checkout_date) {
+    if (this.checkin_date && checkout_date) {
+        if (this.checkin_date.getTime() >= checkout_date.getTime()) {
+            this.invalidate('checkout_date', 'must be after `Check-in date`');
+        }
+    }
+});
+
 module.exports = HostelSchema;
