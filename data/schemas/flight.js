@@ -95,6 +95,20 @@ FlightSchema.path('is_return').validate(function(value) {
     }
     if (!this.return_departure_time) {
         this.invalidate('return_departure_time', 'required field');
+    } else {
+        if (this.departure_time && this.departure_date && this.return_departure_date && this.departure_date.getTime() === this.return_departure_date.getTime()) {
+            const departureTimeParts = this.departure_time.split(':');
+            const returnDepartureTimeParts = this.return_departure_time.split(':');
+            const departureHour = parseInt(departureTimeParts[0], 10);
+            const returnDepartureHour = parseInt(returnDepartureTimeParts[0], 10);
+            const departureMinute = parseInt(departureTimeParts[1], 10);
+            const returnDepartureMinute = parseInt(returnDepartureTimeParts[1], 10);
+            const validHour = departureHour <= returnDepartureHour;
+            const validMinute = ((departureHour < returnDepartureHour) || (departureHour === returnDepartureHour && departureMinute < returnDepartureMinute));
+            if (!validHour || !validMinute) {
+                this.invalidate('return_departure_time', 'must be after `Departure time`');
+            }
+        }
     }
 }, null);
 
