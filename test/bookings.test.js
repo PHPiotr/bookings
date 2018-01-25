@@ -211,6 +211,19 @@ describe('Bookings', () => {
                             done();
                         });
                 });
+            } else {
+                it(`it should fail creating ${bookingType} booking when 'check-out date' not after 'check-in date' is`, (done) => {
+                    const d = new Date();
+                    chai.request(server)
+                        .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                        .send(Object.assign({}, bookings[bookingType], {checkin_date: d, checkout_date: d}))
+                        .set('Authorization', `Bearer ${loginToken}`)
+                        .end((err, res) => {
+                            should.exist(err);
+                            res.should.have.status(403);
+                            done();
+                        });
+                });
             }
             it(`it should fail creating ${bookingType} booking which already exists`, (done) => {
                 if (bookingType === 'trains') {
