@@ -200,6 +200,17 @@ describe('Bookings', () => {
                     });
             });
             if (bookingType !== 'hostels') {
+                it(`it should fail creating ${bookingType} booking when 'return_departure_date' greater than 'departure_date' is`, (done) => {
+                    chai.request(server)
+                        .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                        .send(Object.assign({}, bookings[bookingType], {is_return: true, departure_date: new Date('2018-01-01'), return_departure_date: new Date('2017-01-01')}))
+                        .set('Authorization', `Bearer ${loginToken}`)
+                        .end((err, res) => {
+                            should.exist(err);
+                            res.should.have.status(403);
+                            done();
+                        });
+                });
                 it(`it should fail creating ${bookingType} booking when 'from' the same as 'to' is`, (done) => {
                     chai.request(server)
                         .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
