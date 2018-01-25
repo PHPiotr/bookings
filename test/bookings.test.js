@@ -222,6 +222,27 @@ describe('Bookings', () => {
                             done();
                         });
                 });
+                // Trains do not use (return) departure time, just (return) departure date
+                if (bookingType !== 'trains') {
+                    const d = new Date();
+                    it(`it should fail creating ${bookingType} booking when 'departure_date' the same as 'return_departure_date' is and 'return_departure_time' is not greater than 'departure_time'`, (done) => {
+                        chai.request(server)
+                            .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
+                            .send(Object.assign({}, bookings[bookingType], {
+                                is_return: true,
+                                departure_date: d,
+                                return_departure_date: d,
+                                departure_time: '02:05',
+                                return_departure_time: '02:05',
+                            }))
+                            .set('Authorization', `Bearer ${loginToken}`)
+                            .end((err, res) => {
+                                should.exist(err);
+                                res.should.have.status(403);
+                                done();
+                            });
+                    });
+                }
             } else {
                 it(`it should fail creating ${bookingType} booking when 'check-out date' not after 'check-in date' is`, (done) => {
                     const d = new Date();
