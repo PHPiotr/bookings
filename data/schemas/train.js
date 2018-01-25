@@ -75,6 +75,12 @@ TrainSchema.path('is_return').validate(function(value) {
     }
     if (!this.return_departure_date) {
         this.invalidate('return_departure_date', 'required field');
+    } else {
+        if (this.departure_date) {
+            if (this.departure_date.getTime() > this.return_departure_date.getTime()) {
+                this.invalidate('return_departure_date', 'must be after `Departure date`');
+            }
+        }
     }
 }, null);
 
