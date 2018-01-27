@@ -1,7 +1,6 @@
 const User = require('../data/models/user');
 const loggedIn = require('./middleware/logged_in');
 const loggedInOrActivating = require('./middleware/logged_in_or_activating');
-const loadUser = require('./middleware/load_user');
 const express = require('express');
 const router = express.Router();
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -92,8 +91,16 @@ router.patch('/:id', (req, res, next) => {
     });
 });
 
-router.get('/:username', loadUser, (req, res) => {
-    User.findOne({username: req.params.username}, (err, user) => {
+router.get('/:username', (req, res, next) => {
+    const id = req.params.username;
+    const or = [{username: id}];
+    if (ObjectId.isValid(id)) {
+        or.push({_id: ObjectId(id)});
+    }
+    User.findOne({$or: or}, (err, user) => {
+        if (!user) {
+            return res.handleError('User not found', 404, next);
+        }
         const {_id, username, active, meta} = user;
         res.status(200).json({
             id: _id,
