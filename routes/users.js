@@ -112,6 +112,8 @@ router.get('/:username', (req, res, next) => {
     });
 });
 
+router.get('/current', loggedIn, (req, res) => res.status(200).json(res.user));
+
 router.delete('/:username', loggedIn, (req, res) => User.remove({username: req.params.username}, () => res.status(204).send()));
 
 module.exports = router;
