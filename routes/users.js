@@ -91,6 +91,11 @@ router.patch('/:id', (req, res, next) => {
     });
 });
 
+router.get('/current', loggedIn, (req, res) => {
+    const {user: {username, email, meta, active}} = res;
+    res.status(200).json({username, email, meta, active});
+});
+
 router.get('/:username', (req, res, next) => {
     const id = req.params.username;
     const or = [{username: id}];
@@ -111,8 +116,6 @@ router.get('/:username', (req, res, next) => {
         });
     });
 });
-
-router.get('/current', loggedIn, (req, res) => res.status(200).json(res.user));
 
 router.delete('/:username', loggedIn, (req, res) => User.remove({username: req.params.username}, () => res.status(204).send()));
 
