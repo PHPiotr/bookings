@@ -92,8 +92,14 @@ router.patch('/:id', (req, res, next) => {
 });
 
 router.get('/current', loggedIn, (req, res) => {
-    const {user: {username, email, meta, active}} = res;
-    res.status(200).json({username, email, meta, active});
+    const {user: {username, email, meta: {created_at, updated_at}, active}} = res;
+    res.status(200).json({
+        login: username,
+        email,
+        createdAt: created_at,
+        updatedAt: updated_at,
+        isActive: active,
+    });
 });
 
 router.get('/:username', (req, res, next) => {
