@@ -27,7 +27,6 @@ router.get('/login', (req, res, next) => {
 
     if (!username || !password) {
         return fail(res, {
-            success: false,
             error,
             errors: getErrors(!username ? 'required field' : '', !password ? 'required field' : ''),
         }, 401);
@@ -36,7 +35,6 @@ router.get('/login', (req, res, next) => {
     User.findOne({username: username}, (err, user) => {
         if (!user) {
             return fail(res, {
-                success: false,
                 error,
                 errors: getErrors('incorrect value', ''),
             }, 401);
@@ -44,14 +42,12 @@ router.get('/login', (req, res, next) => {
         user.comparePassword(password, user.password, (err, isMatch) => {
             if (!isMatch) {
                 return fail(res, {
-                    success: false,
                     error,
                     errors: getErrors('', 'incorrect value'),
                 }, 401);
             }
             if (!user.active) {
                 return res.handleError({
-                    success: false,
                     error: 'Account not active',
                     errors: getErrors('', ''),
                 }, 403, next);
