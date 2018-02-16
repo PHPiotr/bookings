@@ -6,7 +6,6 @@ const router = express.Router();
 const ObjectId = require('mongoose').Types.ObjectId;
 const jwt = require('jsonwebtoken');
 const sendgrid = require('sendgrid');
-const bcrypt = require('bcrypt-nodejs');
 
 router.post('/', (req, res, next) => {
     const user = req.body.registration;
@@ -74,7 +73,7 @@ router.patch('/:id', (req, res, next) => {
         if (!user) {
             return res.handleError('No such user', 404, next);
         }
-        if (currentPassword) {
+        if (currentPassword !== undefined) {
             jwt.verify(token, process.env.AUTH_SECRET, {algorithms: 'HS256'}, (err, decoded) => {
                 if (err) {
                     return res.handleError('Failed to authenticate token', 403, next);
@@ -82,14 +81,27 @@ router.patch('/:id', (req, res, next) => {
                 if (decoded.purpose !== 'login') {
                     return res.status(403).json({error: 'Failed to authenticate token'});
                 }
-                bcrypt.hash(currentPassword, null, null, (err, hash) => {
-                    if (err) {
-                        return res.handleError('Failed to check current password', 403, next);
+                let error;
+                if (!currentPassword.trim()) {
+                    error = new Error('Failed to change password');
+                    error.errors = {
+                        currentPassword: {
+                            message: 'required field',
+                        }
+                    };
+                    return res.handleError(error, 403, next);
+                }
+                user.comparePassword(currentPassword, user.password, (err, isMatch) => {
+                    if (!isMatch) {
+                        error = new Error('Failed to change password');
+                        error.errors = {
+                            currentPassword: {
+                                message: 'must match current password',
+                            }
+                        };
+                        return res.handleError(error, 403, next);
                     }
-                    if (hash !== user.password) {
-                        return res.handleError('Current password does not match', 403, next);
-                    }
-                    user.set({ password: newPassword, repeatPassword: newPasswordRepeat});
+                    user.set({password: newPassword, repeatPassword: newPasswordRepeat});
                     user.save(function (err) {
                         if (err) {
                             if (err.name === 'ValidationError') {
@@ -99,7 +111,7 @@ router.patch('/:id', (req, res, next) => {
                         }
                         res.status(204).send();
                     });
-                })
+                });
             });
         } else {
             jwt.verify(token, `${process.env.AUTH_SECRET}${user.password}`, {algorithms: 'HS256'}, (err) => {
