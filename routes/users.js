@@ -6,6 +6,7 @@ const router = express.Router();
 const ObjectId = require('mongoose').Types.ObjectId;
 const jwt = require('jsonwebtoken');
 const sendgrid = require('sendgrid');
+const bcrypt = require('bcrypt-nodejs');
 
 router.post('/', (req, res, next) => {
     const user = req.body.registration;
@@ -67,27 +68,56 @@ router.patch('/:id', (req, res, next) => {
         return res.handleError('No token provided', 403, next);
     }
 
-    const {newPassword, newPasswordRepeat} = req.body;
+    const {currentPassword, newPassword, newPasswordRepeat} = req.body;
 
     User.findById(req.params.id, function(err, user) {
         if (!user) {
             return res.handleError('No such user', 404, next);
         }
-        jwt.verify(token, `${process.env.AUTH_SECRET}${user.password}`, {algorithms: 'HS256'}, (err) => {
-            if (err) {
-                return res.handleError(`${err.name}: ${err.message}`, 403, next);
-            }
-            user.set({ password: newPassword, repeatPassword: newPasswordRepeat});
-            user.save(function (err) {
+        if (currentPassword) {
+            jwt.verify(token, process.env.AUTH_SECRET, {algorithms: 'HS256'}, (err, decoded) => {
                 if (err) {
-                    if (err.name === 'ValidationError') {
-                        err.message = err._message;
-                    }
-                    return res.handleError(err, 403, next);
+                    return res.handleError('Failed to authenticate token', 403, next);
                 }
-                res.status(204).send();
+                if (decoded.purpose !== 'login') {
+                    return res.status(403).json({error: 'Failed to authenticate token'});
+                }
+                bcrypt.hash(currentPassword, null, null, (err, hash) => {
+                    if (err) {
+                        return res.handleError('Failed to check current password', 403, next);
+                    }
+                    if (hash !== user.password) {
+                        return res.handleError('Current password does not match', 403, next);
+                    }
+                    user.set({ password: newPassword, repeatPassword: newPasswordRepeat});
+                    user.save(function (err) {
+                        if (err) {
+                            if (err.name === 'ValidationError') {
+                                err.message = err._message;
+                            }
+                            return res.handleError(err, 403, next);
+                        }
+                        res.status(204).send();
+                    });
+                })
             });
-        });
+        } else {
+            jwt.verify(token, `${process.env.AUTH_SECRET}${user.password}`, {algorithms: 'HS256'}, (err) => {
+                if (err) {
+                    return res.handleError(`${err.name}: ${err.message}`, 403, next);
+                }
+                user.set({ password: newPassword, repeatPassword: newPasswordRepeat});
+                user.save(function (err) {
+                    if (err) {
+                        if (err.name === 'ValidationError') {
+                            err.message = err._message;
+                        }
+                        return res.handleError(err, 403, next);
+                    }
+                    res.status(204).send();
+                });
+            });
+        }
     });
 });
 
