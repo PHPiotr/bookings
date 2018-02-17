@@ -105,7 +105,7 @@ router.patch('/:id', (req, res, next) => {
                     user.save(function (err) {
                         if (err) {
                             if (err.name === 'ValidationError') {
-                                err.message = err._message;
+                                err.message = 'Failed to change password';
                             }
                             return res.handleError(err, 403, next);
                         }
