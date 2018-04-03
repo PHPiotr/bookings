@@ -30,14 +30,12 @@ describe('Password reset', () => {
     let incorrectlyHashedLoginToken, incorrectlyHashedActivationToken;
 
     const cleanup = (done, callback) => {
+        const onDone = () => typeof callback === 'function' ? callback(done) : done();
         chai.request(server)
             .get(`${process.env.API_PREFIX}/users/${username}`)
-            .end((err, res) => {
-                if (err) {
-                    return typeof callback === 'function' ? callback(done) : done();
-                }
+            .then((res) => {
                 if (res.statusCode !== 200) {
-                    return typeof callback === 'function' ? callback(done) : done();
+                    return onDone();
                 }
                 const {body} = res;
                 loginToken = jwt.sign({
@@ -48,10 +46,10 @@ describe('Password reset', () => {
                 chai.request(server)
                     .delete(`${process.env.API_PREFIX}/users/${body.login}`)
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end(() => {
-                        typeof callback === 'function' ? callback(done) : done();
-                    });
-            });
+                    .then(() => onDone())
+                    .catch(() => done());
+            })
+            .catch(() => done());
     };
 
     const createUser2 = (done) => {
@@ -62,13 +60,14 @@ describe('Password reset', () => {
                 email: email2,
                 repeatPassword: password,
             },
-        }).end((err, res) => {
+        })
+        .then((res) => {
             if (res.statusCode === 201) {
                 const location = res.get('Location');
                 const parts = location.split('/');
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/users/${parts[parts.length - 1]}`)
-                    .end((err, res) => {
+                    .then((res) => {
                         userId2 = res.body.id;
                         loginToken2 = jwt.sign({
                             sub: userId2,
@@ -80,22 +79,25 @@ describe('Password reset', () => {
                         }, process.env.AUTH_SECRET, {algorithm: 'HS256'});
 
                         chai.request(server)
-                            .put(`${process.env.API_PREFIX}/users/${userId2}`)
-                            .set('Authorization', `Bearer ${activationToken2}`)
-                            .end(() => {
-                                User.findOne({_id: userId2}, (err, user) => {
-                                    passwordResetToken2 = jwt.sign({
-                                        sub: userId2,
-                                        purpose: 'password-reset',
-                                    }, `${process.env.AUTH_SECRET}${user.password}`, {algorithm: 'HS256'});
-                                    done();
-                                });
+                        .put(`${process.env.API_PREFIX}/users/${userId2}`)
+                        .set('Authorization', `Bearer ${activationToken2}`)
+                        .then(() => {
+                            User.findOne({_id: userId2}, (err, user) => {
+                                passwordResetToken2 = jwt.sign({
+                                    sub: userId2,
+                                    purpose: 'password-reset',
+                                }, `${process.env.AUTH_SECRET}${user.password}`, {algorithm: 'HS256'});
+                                done();
                             });
-                    });
+                        })
+                        .catch(() => done());
+                    })
+                    .catch(() => done());
             } else {
                 done();
             }
-        });
+        })
+        .catch(() => done());
     };
 
     const removeUser2 = (done) => {
@@ -114,7 +116,7 @@ describe('Password reset', () => {
                 const parts = location.split('/');
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/users/${parts[parts.length - 1]}`)
-                    .end((err, res) => {
+                    .then((res) => {
                         userId = res.body.id;
                         loginToken = jwt.sign({
                             sub: userId,
@@ -145,7 +147,8 @@ describe('Password reset', () => {
                                     done();
                                 });
                             });
-                    });
+                    })
+                    .catch(() => done());
             } else {
                 done();
             }
@@ -159,20 +162,19 @@ describe('Password reset', () => {
             .patch(`${process.env.API_PREFIX}/users/${userId}`)
             .set('Authorization', `Bearer ${passwordResetToken}`)
             .send({newPassword, newPasswordRepeat})
-            .end((err, res) => {
-                should.not.exist(err);
-                res.should.have.status(204);
+            .then((res) => {
+                should.equal(res.status, 204);
                 done();
-            });
+            })
+            .catch(() => done());
     });
     it('it should fail resetting password when passwords do not match', (done) => {
         chai.request(server)
             .patch(`${process.env.API_PREFIX}/users/${userId}`)
             .set('Authorization', `Bearer ${passwordResetToken}`)
             .send({newPassword, newPasswordRepeat: 'incorrect'})
-            .end((err, res) => {
-                should.exist(err);
-                res.should.have.status(403);
+            .then((res) => {
+                should.equal(res.status, 403);
                 done();
             });
     });
@@ -181,9 +183,8 @@ describe('Password reset', () => {
             .patch(`${process.env.API_PREFIX}/users/${userId}`)
             .set('Authorization', `Bearer ${passwordResetToken}`)
             .send({newPassword: 'short', newPasswordRepeat: 'short'})
-            .end((err, res) => {
-                should.exist(err);
-                res.should.have.status(403);
+            .then((res) => {
+                should.equal(res.status, 403);
                 done();
             });
     });
@@ -192,9 +193,8 @@ describe('Password reset', () => {
             .patch(`${process.env.API_PREFIX}/users/${userId}`)
             .set('Authorization', `Bearer ${passwordResetToken}`)
             .send({newPassword: '', newPasswordRepeat: ''})
-            .end((err, res) => {
-                should.exist(err);
-                res.should.have.status(403);
+            .then((res) => {
+                should.equal(res.status, 403);
                 done();
             });
     });
@@ -203,42 +203,41 @@ describe('Password reset', () => {
             .patch(`${process.env.API_PREFIX}/users/${userId}`)
             .set('Authorization', `Bearer ${loginToken}`)
             .send({newPassword, newPasswordRepeat})
-            .end((err, res) => {
-                should.exist(err);
-                res.should.have.status(403);
+            .then((res) => {
+                should.equal(res.status, 403);
                 chai.request(server)
                     .patch(`${process.env.API_PREFIX}/users/${userId}`)
                     .set('Authorization', `Bearer ${activationToken}`)
                     .send({newPassword, newPasswordRepeat})
-                    .end((err, res) => {
-                        should.exist(err);
-                        res.should.have.status(403);
+                    .then((res) => {
+                        should.equal(res.status, 403);
                         chai.request(server)
                             .patch(`${process.env.API_PREFIX}/users/${userId}`)
                             .set('Authorization', `Bearer ${incorrectlyHashedLoginToken}`)
                             .send({newPassword, newPasswordRepeat})
-                            .end((err, res) => {
-                                should.exist(err);
-                                res.should.have.status(403);
+                            .then((res) => {
+                                should.equal(res.status, 403);
                                 chai.request(server)
                                     .patch(`${process.env.API_PREFIX}/users/${userId}`)
                                     .set('Authorization', `Bearer ${incorrectlyHashedActivationToken}`)
                                     .send({newPassword, newPasswordRepeat})
-                                    .end((err, res) => {
-                                        should.exist(err);
-                                        res.should.have.status(403);
+                                    .then((res) => {
+                                        should.equal(res.status, 403);
                                         done();
-                                    });
-                            });
-                    });
-            });
+                                    })
+                                    .catch(() => done());
+                            })
+                            .catch(() => done());
+                    })
+                    .catch(() => done());
+            })
+            .catch(() => done());
     });
     it('it should fail resetting password when no body and no token', (done) => {
         chai.request(server)
             .patch(`${process.env.API_PREFIX}/users/${userId}`)
-            .end((err, res) => {
-                should.exist(err);
-                res.should.have.status(403);
+            .then((res) => {
+                should.equal(res.status, 403);
                 done();
             });
     });
@@ -246,9 +245,8 @@ describe('Password reset', () => {
         chai.request(server)
             .patch(`${process.env.API_PREFIX}/users/${userId}`)
             .set('Authorization', `Bearer ${passwordResetToken}`)
-            .end((err, res) => {
-                should.exist(err);
-                res.should.have.status(403);
+            .then((res) => {
+                should.equal(res.status, 403);
                 done();
             });
     });
@@ -257,9 +255,8 @@ describe('Password reset', () => {
             .patch(`${process.env.API_PREFIX}/users/${userId.split('').reverse().join('')}`)
             .set('Authorization', `Bearer ${passwordResetToken}`)
             .send({newPassword, newPasswordRepeat})
-            .end((err, res) => {
-                should.exist(err);
-                res.should.have.status(404);
+            .then((res) => {
+                should.equal(res.status, 404);
                 done();
             });
     });
@@ -268,18 +265,18 @@ describe('Password reset', () => {
             .patch(`${process.env.API_PREFIX}/users/${userId2}`)
             .set('Authorization', `Bearer ${passwordResetToken}`)
             .send({newPassword, newPasswordRepeat})
-            .end((err, res) => {
-                should.exist(err);
-                res.should.have.status(403);
+            .then((res) => {
+                should.equal(res.status, 403);
                 chai.request(server)
                     .patch(`${process.env.API_PREFIX}/users/${userId}`)
                     .set('Authorization', `Bearer ${passwordResetToken2}`)
                     .send({newPassword, newPasswordRepeat})
-                    .end((err, res) => {
-                        should.exist(err);
-                        res.should.have.status(403);
+                    .then((res) => {
+                        should.equal(res.status, 403);
                         done();
-                    });
-            });
+                    })
+                    .catch(() => done());
+            })
+            .catch(() => done());
     });
 });

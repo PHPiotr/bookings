@@ -100,9 +100,8 @@ describe('Auth', () => {
         it('it should fail logging user in when no basic auth', (done) => {
             chai.request(server)
                 .get(`${process.env.API_PREFIX}/auth/login`)
-                .end((err, res) => {
-                    should.exist(err);
-                    res.should.have.status(401);
+                .then((res) => {
+                    should.equal(res.status, 401);
                     done();
                 });
         });
@@ -110,9 +109,8 @@ describe('Auth', () => {
             chai.request(server)
                 .get(`${process.env.API_PREFIX}/auth/login`)
                 .set('Authorization', 'Basic incorrect')
-                .end((err, res) => {
-                    should.exist(err);
-                    res.should.have.status(401);
+                .then((res) => {
+                    should.equal(res.status, 401);
                     done();
                 });
         });
@@ -121,9 +119,8 @@ describe('Auth', () => {
             chai.request(server)
                 .get(`${process.env.API_PREFIX}/auth/login`)
                 .set('Authorization', `Basic ${wrongBasic}`)
-                .end((err, res) => {
-                    should.exist(err);
-                    res.should.have.status(401);
+                .then((res) => {
+                    should.equal(res.status, 401);
                     done();
                 });
         });
