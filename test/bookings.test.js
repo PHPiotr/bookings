@@ -73,10 +73,7 @@ describe('Bookings', () => {
     before((done) => {
         chai.request(server)
             .get(`${process.env.API_PREFIX}/users/${username}`)
-            .end((err, res) => {
-                if (err) {
-                    return done();
-                }
+            .then((res) => {
                 if (res.statusCode !== 200) {
                     return done();
                 }
@@ -90,17 +87,18 @@ describe('Bookings', () => {
                     .delete(`${process.env.API_PREFIX}/users/${body.login}`)
                     .set('Authorization', `Bearer ${loginToken}`)
                     .end(() => done());
-            });
+            })
+            .catch(() => done());
     });
 
     beforeEach((done) => {
-        chai.request(server).post(`${process.env.API_PREFIX}/users`).send(body).end((err, res) => {
-            if (res.statusCode === 201) {
+        chai.request(server).post(`${process.env.API_PREFIX}/users`).send(body).then((res) => {
+            if (res.status === 201) {
                 const location = res.get('Location');
                 const parts = location.split('/');
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/users/${parts[parts.length - 1]}`)
-                    .end((err, res) => {
+                    .then((res) => {
                         userId = res.body.id;
                         loginToken = jwt.sign({
                             sub: userId,
@@ -113,23 +111,19 @@ describe('Bookings', () => {
                         chai.request(server)
                             .put(`${process.env.API_PREFIX}/users/${userId}`)
                             .set('Authorization', `Bearer ${activationToken}`)
-                            .end(() => {
-                                done();
-                            });
+                            .end(() => done());
                     });
             } else {
                 done();
             }
-        });
+        })
+        .catch(() => done());
     });
 
     after((done) => {
         chai.request(server)
             .get(`${process.env.API_PREFIX}/users/${username}`)
-            .end((err, res) => {
-                if (err) {
-                    return done();
-                }
+            .then((res) => {
                 if (res.statusCode !== 200) {
                     return done();
                 }
@@ -182,9 +176,8 @@ describe('Bookings', () => {
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .send(bookings[bookingType])
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end((err, res) => {
-                        should.not.exist(err);
-                        res.should.have.status(201);
+                    .then((res) => {
+                        should.equal(res.status, 201);
                         const location = res.get('Location');
                         const parts = location.split('/');
                         const bookingId = parts[parts.length - 1];
@@ -192,12 +185,13 @@ describe('Bookings', () => {
                         chai.request(server)
                             .get(`${process.env.API_PREFIX}/bookings/${bookingType}/${bookingId}`)
                             .set('Authorization', `Bearer ${loginToken}`)
-                            .end((viewErr, viewRes) => {
-                                should.not.exist(viewErr);
-                                viewRes.should.have.status(200);
+                            .then((res) => {
+                                should.equal(res.status, 200);
                                 done();
-                            });
-                    });
+                            })
+                            .catch(() => done());
+                    })
+                    .catch(() => done());
             });
             if (bookingType !== 'hostels') {
                 it(`it should fail creating ${bookingType} booking when 'return_departure_date' greater than 'departure_date' is`, (done) => {
@@ -205,22 +199,22 @@ describe('Bookings', () => {
                         .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                         .send(Object.assign({}, bookings[bookingType], {is_return: true, departure_date: new Date('2018-01-01'), return_departure_date: new Date('2017-01-01')}))
                         .set('Authorization', `Bearer ${loginToken}`)
-                        .end((err, res) => {
-                            should.exist(err);
-                            res.should.have.status(403);
+                        .then((res) => {
+                            should.equal(res.status, 403);
                             done();
-                        });
+                        })
+                        .catch(() => done());
                 });
                 it(`it should fail creating ${bookingType} booking when 'from' the same as 'to' is`, (done) => {
                     chai.request(server)
                         .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                         .send(Object.assign({}, bookings[bookingType], {from: 'London', to: 'London'}))
                         .set('Authorization', `Bearer ${loginToken}`)
-                        .end((err, res) => {
-                            should.exist(err);
-                            res.should.have.status(403);
+                        .then((res) => {
+                            should.equal(res.status, 403);
                             done();
-                        });
+                        })
+                        .catch(() => done());
                 });
                 // Trains do not use (return) departure time, just (return) departure date
                 if (bookingType !== 'trains') {
@@ -236,11 +230,11 @@ describe('Bookings', () => {
                                 return_departure_time: '02:05',
                             }))
                             .set('Authorization', `Bearer ${loginToken}`)
-                            .end((err, res) => {
-                                should.exist(err);
-                                res.should.have.status(403);
+                            .then((res) => {
+                                should.equal(res.status, 403);
                                 done();
-                            });
+                            })
+                            .catch(() => done());
                     });
                 }
             } else {
@@ -250,11 +244,11 @@ describe('Bookings', () => {
                         .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                         .send(Object.assign({}, bookings[bookingType], {checkin_date: d, checkout_date: d}))
                         .set('Authorization', `Bearer ${loginToken}`)
-                        .end((err, res) => {
-                            should.exist(err);
-                            res.should.have.status(403);
+                        .then((res) => {
+                            should.equal(res.status, 403);
                             done();
-                        });
+                        })
+                        .catch(() => done());
                 });
             }
             it(`it should fail creating ${bookingType} booking which already exists`, (done) => {
@@ -266,7 +260,7 @@ describe('Bookings', () => {
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .send(bookings[bookingType])
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end((err, res) => {
+                    .then((res) => {
                         const location = res.get('Location');
                         const parts = location.split('/');
                         const bookingId = parts[parts.length - 1];
@@ -275,33 +269,34 @@ describe('Bookings', () => {
                             .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                             .send(bookings[bookingType])
                             .set('Authorization', `Bearer ${loginToken}`)
-                            .end((err, res) => {
-                                should.exist(err);
-                                res.should.have.status(409);
+                            .then((res) => {
+                                should.equal(res.status, 409);
                                 chai.request(server)
                                     .delete(`${process.env.API_PREFIX}/bookings/${bookingType}/${bookingId}`)
                                     .set('Authorization', `Bearer ${loginToken}`)
                                     .end(() => done());
-                            });
-                    });
+                            })
+                            .catch(() => done());
+                    })
+                    .catch(() => done());
             });
             it(`it should fail creating ${bookingType} booking when invalid input`, (done) => {
                 chai.request(server)
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .send(Object.assign({}, bookings[bookingType], {price: 'invalid input', is_return: true}))
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end((err, res) => {
-                        should.exist(err);
-                        res.should.have.status(403);
+                    .then((res) => {
+                        should.equal(res.status, 403);
                         done();
-                    });
+                    })
+                    .catch(() => done());
             });
             it(`it should succeed editing ${bookingType} booking`, (done) => {
                 chai.request(server)
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .send(bookings[bookingType])
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end((err, res) => {
+                    .then((res) => {
                         const location = res.get('Location');
                         const parts = location.split('/');
                         const bookingId = parts[parts.length - 1];
@@ -310,20 +305,21 @@ describe('Bookings', () => {
                             .put(`${process.env.API_PREFIX}/bookings/${bookingType}/${bookingId}`)
                             .send({price: 99.99})
                             .set('Authorization', `Bearer ${loginToken}`)
-                            .end((viewErr, viewRes) => {
-                                should.not.exist(viewErr);
-                                viewRes.should.have.status(204);
+                            .then((res) => {
+                                should.equal(res.status, 204);
                                 done();
-                            });
-                    });
+                            })
+                            .catch(() => done());
+                    })
+                    .catch(() => done());
             });
             it(`it should succeed editing ${bookingType} booking but \`created at\` date should not be updated`, (done) => {
-                let createdAt;
                 chai.request(server)
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .send(bookings[bookingType])
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end((err, res) => {
+                    .then((res) => {
+                        let createdAt;
                         const location = res.get('Location');
                         const parts = location.split('/');
                         const bookingId = parts[parts.length - 1];
@@ -340,19 +336,20 @@ describe('Bookings', () => {
                                     .end(() => {
                                         Model.findOne({_id: bookingId})
                                             .exec((err, checkBooking) => {
-                                                checkBooking.meta.created_at.toLocaleTimeString().should.equal(createdAt.toLocaleTimeString());
+                                                should.equal(checkBooking.meta.created_at.toLocaleTimeString(), createdAt.toLocaleTimeString());
                                                 done();
                                             });
                                     });
                             });
-                    });
+                    })
+                    .catch(() => done());
             });
             it(`it should fail editing ${bookingType} booking when validation fails`, (done) => {
                 chai.request(server)
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .send(bookings[bookingType])
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end((err, res) => {
+                    .then((res) => {
                         const location = res.get('Location');
                         const parts = location.split('/');
                         const bookingId = parts[parts.length - 1];
@@ -361,12 +358,13 @@ describe('Bookings', () => {
                             .put(`${process.env.API_PREFIX}/bookings/${bookingType}/${bookingId}`)
                             .send({price: 'wrong'})
                             .set('Authorization', `Bearer ${loginToken}`)
-                            .end((viewErr, viewRes) => {
-                                should.exist(viewErr);
-                                viewRes.should.have.status(403);
+                            .then((res) => {
+                                should.equal(res.status, 403);
                                 done();
-                            });
-                    });
+                            })
+                            .catch(() => done());
+                    })
+                    .catch(() => done());
             });
             it(`it should fail viewing someone else's ${bookingType} booking`, (done) => {
 
@@ -383,12 +381,12 @@ describe('Bookings', () => {
                             repeatPassword: password,
                         },
                     })
-                    .end((err, res) => {
+                    .then((res) => {
                         const location = res.get('Location');
                         const parts = location.split('/');
                         chai.request(server)
                             .get(`${process.env.API_PREFIX}/users/${parts[parts.length - 1]}`)
-                            .end((err, res) => {
+                            .then((res) => {
                                 userIdOfSomeoneElse = res.body.id;
                                 loginTokenOfSomeoneElse = jwt.sign({
                                     sub: userIdOfSomeoneElse,
@@ -406,7 +404,7 @@ describe('Bookings', () => {
                                             .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                                             .send(bookings[bookingType])
                                             .set('Authorization', `Bearer ${loginToken}`)
-                                            .end((err, res) => {
+                                            .then((res) => {
                                                 const location = res.get('Location');
                                                 const parts = location.split('/');
                                                 const bookingId = parts[parts.length - 1];
@@ -414,18 +412,20 @@ describe('Bookings', () => {
                                                 chai.request(server)
                                                     .get(`${process.env.API_PREFIX}/bookings/${bookingType}/${bookingId}`)
                                                     .set('Authorization', `Bearer ${loginTokenOfSomeoneElse}`)
-                                                    .end((err, res) => {
-                                                        should.exist(err);
-                                                        res.should.have.status(403);
+                                                    .then((res) => {
+                                                        should.equal(res.status, 403);
                                                         chai.request(server)
                                                             .delete(`${process.env.API_PREFIX}/users/${usernameOfSomeoneElse}`)
                                                             .set('Authorization', `Bearer ${loginTokenOfSomeoneElse}`)
                                                             .end(() => done());
-                                                    });
+                                                    })
+                                                    .catch(() => done());
                                             });
                                     });
-                            });
-                });
+                            })
+                            .catch(() => done());
+                    })
+                    .catch(() => done());
             });
 
             it(`it should fail listing someone else's ${bookingType} bookings`, (done) => {
@@ -443,12 +443,12 @@ describe('Bookings', () => {
                             repeatPassword: password,
                         },
                     })
-                    .end((err, res) => {
+                    .then((res) => {
                         const location = res.get('Location');
                         const parts = location.split('/');
                         chai.request(server)
                             .get(`${process.env.API_PREFIX}/users/${parts[parts.length - 1]}`)
-                            .end((err, res) => {
+                            .then((res) => {
                                 userIdOfSomeoneElse = res.body.id;
                                 loginTokenOfSomeoneElse = jwt.sign({
                                     sub: userIdOfSomeoneElse,
@@ -461,46 +461,48 @@ describe('Bookings', () => {
                                         chai.request(server)
                                             .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                                             .set('Authorization', `Bearer ${loginTokenOfSomeoneElse}`)
-                                            .end((err, res) => {
-                                                should.exist(err);
-                                                res.should.have.status(403);
+                                            .then((res) => {
+                                                should.equal(res.status, 403);
                                                 done();
-                                            });
+                                            })
+                                            .catch(() => done());
                                     });
-                            });
-                    });
+                            })
+                            .catch(() => done());
+                    })
+                    .catch(() => done());
             });
 
             it(`it should fail creating ${bookingType} booking when no login token sent`, (done) => {
                 chai.request(server)
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .send(bookings[bookingType])
-                    .end((err, res) => {
-                        should.exist(err);
-                        res.should.have.status(403);
+                    .then((res) => {
+                        should.equal(res.status, 403);
                         done();
-                    });
+                    })
+                    .catch(() => done());
             });
             it(`it should fail creating ${bookingType} booking when activation token used`, (done) => {
                 chai.request(server)
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .send(bookings[bookingType])
                     .set('Authorization', `Bearer ${activationToken}`)
-                    .end((err, res) => {
-                        should.exist(err);
-                        res.should.have.status(403);
+                    .then((res) => {
+                        should.equal(res.status, 403);
                         done();
-                    });
+                    })
+                    .catch(() => done());
             });
             it(`it should fail creating ${bookingType} booking when no data submitted`, (done) => {
                 chai.request(server)
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .set('Authorization', `Bearer ${activationToken}`)
-                    .end((err, res) => {
-                        should.exist(err);
-                        res.should.have.status(403);
+                    .then((res) => {
+                        should.equal(res.status, 403);
                         done();
-                    });
+                    })
+                    .catch(() => done());
             });
 
             it(`it should succeed deleting ${bookingType} booking`, (done) => {
@@ -508,12 +510,11 @@ describe('Bookings', () => {
                     .post(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .send(bookings[bookingType])
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end((createErr, createResponse) => {
+                    .then((res) => {
 
-                        should.not.exist(createErr);
-                        createResponse.should.have.status(201);
+                        should.equal(res.status, 201);
 
-                        const location = createResponse.get('Location');
+                        const location = res.get('Location');
                         const parts = location.split('/');
                         const bookingId = parts[parts.length - 1];
                         bookingsIds[bookingType] = bookingId;
@@ -521,101 +522,102 @@ describe('Bookings', () => {
                         chai.request(server)
                             .delete(`${process.env.API_PREFIX}/bookings/${bookingType}/${bookingId}`)
                             .set('Authorization', `Bearer ${loginToken}`)
-                            .end((deleteErr, deleteResponse) => {
-                                should.not.exist(deleteErr);
-                                deleteResponse.should.have.status(204);
+                            .then((res) => {
+                                should.equal(res.status, 204);
                                 done();
-                            });
-                    });
+                            })
+                            .catch(() => done());
+                    })
+                    .catch(() => done());
             });
             it(`it should fail deleting non-existing ${bookingType} booking`, (done) => {
                 chai.request(server)
                     .delete(`${process.env.API_PREFIX}/bookings/${bookingType}/__non_existing_id__`)
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end((err, res) => {
-                        should.exist(err);
-                        res.should.have.status(404);
+                    .then((res) => {
+                        should.equal(res.status, 404);
                         done();
-                    });
+                    })
+                    .catch(() => done());
             });
             it(`it should fail deleting ${bookingType} booking when no token`, (done) => {
                 chai.request(server)
                     .delete(`${process.env.API_PREFIX}/bookings/${bookingType}/__whatever_id__`)
-                    .end((err, res) => {
-                        should.exist(err);
-                        res.should.have.status(403);
+                    .then((res) => {
+                        should.equal(res.status, 403);
                         done();
-                    });
+                    })
+                    .catch(() => done());
             });
 
             it(`it should succeed listing ${bookingType} bookings`, (done) => {
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end((err, res) => {
-                        should.not.exist(err);
-                        res.should.have.status(200);
+                    .then((res) => {
+                        should.equal(res.status, 200);
                         done();
-                    });
+                    })
+                    .catch(() => done());
             });
             it(`it should succeed listing ${bookingType} current bookings`, (done) => {
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/bookings/${bookingType}?type=current`)
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end((err, res) => {
-                        should.not.exist(err);
-                        res.should.have.status(200);
+                    .then((res) => {
+                        should.equal(res.status, 200);
                         done();
-                    });
+                    })
+                    .catch(() => done());
             });
             it(`it should succeed listing ${bookingType} past bookings`, (done) => {
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/bookings/${bookingType}?type=past`)
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end((err, res) => {
-                        should.not.exist(err);
-                        res.should.have.status(200);
+                    .then((res) => {
+                        should.equal(res.status, 200);
                         done();
-                    });
+                    })
+                    .catch(() => done());
             });
             it(`it should fail listing ${bookingType} bookings of unsupported type`, (done) => {
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/bookings/${bookingType}/?type=unsupported`)
                     .set('Authorization', `Bearer ${loginToken}`)
-                    .end((err, res) => {
-                        should.exist(err);
-                        res.should.have.status(400);
+                    .then((res) => {
+                        should.equal(res.status, 400);
                         done();
-                    });
+                    })
+                    .catch(() => done());
             });
             it(`it should fail listing ${bookingType} bookings when no token`, (done) => {
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
-                    .end((err, res) => {
-                        should.exist(err);
-                        res.should.have.status(403);
+                    .then((res) => {
+                        should.equal(res.status, 403);
                         done();
-                    });
+                    })
+                    .catch(() => done());
             });
             it(`it should fail listing ${bookingType} bookings with activation token`, (done) => {
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .set('Authorization', `Bearer ${activationToken}`)
-                    .end((err, res) => {
-                        should.exist(err);
-                        res.should.have.status(403);
+                    .then((res) => {
+                        should.equal(res.status, 403);
                         done();
-                    });
+                    })
+                    .catch(() => done());
             });
             it(`it should fail listing ${bookingType} bookings with malformed token`, (done) => {
                 chai.request(server)
                     .get(`${process.env.API_PREFIX}/bookings/${bookingType}`)
                     .set('Authorization', `Bearer j.w.t`)
-                    .end((err, res) => {
-                        should.exist(err);
-                        res.should.have.status(403);
+                    .then((res) => {
+                        should.equal(res.status, 403);
                         done();
-                    });
+                    })
+                    .catch(() => done());
             });
 
         });

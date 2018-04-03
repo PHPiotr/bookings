@@ -3,7 +3,6 @@ const chaiHttp = require('chai-http');
 const app = require('../app');
 const should = chai.should();
 const jwt = require('jsonwebtoken');
-//const bcrypt = require('bcrypt-nodejs');
 
 const server = app.server;
 
@@ -29,10 +28,7 @@ describe('Account recovery', () => {
     const cleanup = (done) => {
         chai.request(server)
             .get(`${process.env.API_PREFIX}/users/${username}`)
-            .end((err, res) => {
-                if (err) {
-                    return done();
-                }
+            .then((res) => {
                 if (res.statusCode !== 200) {
                     return done();
                 }
@@ -46,14 +42,15 @@ describe('Account recovery', () => {
                     .delete(`${process.env.API_PREFIX}/users/${body.login}`)
                     .set('Authorization', `Bearer ${loginToken}`)
                     .end(() => done());
-            });
+            })
+            .catch(() => done());
     };
 
     before(done => cleanup(done));
 
     beforeEach((done) => {
-        chai.request(server).post(`${process.env.API_PREFIX}/users`).send(body).end((err, res) => {
-            if (res.statusCode === 201) {
+        chai.request(server).post(`${process.env.API_PREFIX}/users`).send(body).then((res) => {
+            if (res.status === 201) {
                 const location = res.get('Location');
                 const parts = location.split('/');
                 chai.request(server)
@@ -77,7 +74,8 @@ describe('Account recovery', () => {
             } else {
                 done();
             }
-        });
+        })
+        .catch(() => done());
     });
 
     after(done => cleanup(done));
@@ -85,9 +83,8 @@ describe('Account recovery', () => {
     it('it should fail initiating account recovery when no body posted', (done) => {
         chai.request(server)
             .post(`${process.env.API_PREFIX}/auth/account-recovery`)
-            .end((err, res) => {
-                should.exist(err);
-                res.should.have.status(403);
+            .then((res) => {
+                should.equal(res.status, 403);
                 done();
             });
     });
@@ -95,9 +92,8 @@ describe('Account recovery', () => {
         chai.request(server)
             .post(`${process.env.API_PREFIX}/auth/account-recovery`)
             .send({email: 'malformed'})
-            .end((err, res) => {
-                should.exist(err);
-                res.should.have.status(403);
+            .then((res) => {
+                should.equal(res.status, 403);
                 done();
             });
     });
@@ -105,9 +101,8 @@ describe('Account recovery', () => {
         chai.request(server)
             .post(`${process.env.API_PREFIX}/auth/account-recovery`)
             .send({email: 'does-not-exist@example.com'})
-            .end((err, res) => {
-                should.not.exist(err);
-                res.should.have.status(201);
+            .then((res) => {
+                should.equal(res.status, 201);
                 done();
             });
     });
@@ -115,9 +110,8 @@ describe('Account recovery', () => {
         chai.request(server)
             .post(`${process.env.API_PREFIX}/auth/account-recovery`)
             .send({email: 'hello@example.com'})
-            .end((err, res) => {
-                should.exist(err);
-                res.should.have.status(403);
+            .then((res) => {
+                should.equal(res.status, 403);
                 done();
             });
     });
@@ -128,9 +122,8 @@ describe('Account recovery', () => {
                 email: 'hello@example.com',
                 recoveryUrl: 'http://example.com',
             })
-            .end((err, res) => {
-                should.not.exist(err);
-                res.should.have.status(201);
+            .then((res) => {
+                should.equal(res.status, 201);
                 done();
             });
     });

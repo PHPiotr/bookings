@@ -125,7 +125,6 @@ describe('Report', () => {
                 .get(`${process.env.API_PREFIX}/report?from=2017/12/03&to=`)
                 .set('Authorization', `Bearer ${loginToken}`)
                 .end((err, res) => {
-                    should.exist(err);
                     res.should.have.status(422);
                     done();
                 });
